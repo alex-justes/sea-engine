@@ -20,32 +20,10 @@ namespace core::drawable
     public:
         Drawable() = default;
         virtual ~Drawable() = default;
-        const Drawable* get_drawable() const;
-    };
-
-    class DrawableShape
-    {
-    public:
-        virtual ~DrawableShape() = default;
-    };
-
-    class RectShape: public DrawableShape
-    {
-    public:
-        using Rect = helpers::containers::Rect2D<uint32_t>;
-        const Rect& rect() const;
-        const RGBA& color() const;
-    private:
-        Rect _rect;
-        RGBA _color;
     };
 
     class SingleDrawable: public Drawable
     {
-    public:
-        const DrawableShape* shape() const;
-    private:
-        std::unique_ptr<DrawableShape> _shape;
     };
 
     class CompoundDrawable: public Drawable
@@ -54,6 +32,17 @@ namespace core::drawable
         std::list<const Drawable*> get_drawables() const;
     private:
 
+    };
+
+    class Rect: public SingleDrawable
+    {
+    public:
+        using Roi = helpers::containers::Rect2D<uint32_t>;
+        const Roi& roi() const;
+        const RGBA& color() const;
+    private:
+        Roi _roi;
+        RGBA _color;
     };
 };
 

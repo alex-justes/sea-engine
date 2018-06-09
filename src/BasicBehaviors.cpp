@@ -15,3 +15,12 @@ uint32_t Renderable::z_order() const
     return _z_order;
 }
 
+const Renderable::Drawable *Renderable::drawable() const
+{
+    return _drawable.get();
+}
+
+Renderable::Drawable *Renderable::drawable()
+{
+    return _drawable.get();
+}

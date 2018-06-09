@@ -78,15 +78,30 @@ namespace core::behavior
 
     class Renderable:
             public RenderShape<helpers::containers::AABB>,
-            public core::drawable::Drawable,
             public virtual Position
     {
     public:
+        using Drawable = core::drawable::Drawable;
         uint32_t z_order() const;
+        const Drawable *drawable() const;
+        template <class T, class ... Types>
+        T* create(Types &&... args);
     protected:
+        Drawable *drawable();
     private:
         uint32_t _z_order {0};
+        std::unique_ptr<Drawable> _drawable;
     };
+
+    // ===============================================
+    template<class T, class... Types>
+    T *Renderable::create(Types &&... args)
+    {
+        static_assert(std::is_base_of_v<Drawable , T>, "T should be derived from Drawable");
+        auto ptr = new T(std::forward<Types>(args)...);
+        _drawable.reset(ptr);
+        return ptr;
+    }
 
 }
 

@@ -95,6 +95,7 @@ void BasicContext::initialize()
     subscribe(core::EventType::Mouse);
     subscribe(core::EventType::Keyboard);
     auto id1 = object_manager().create<GameObject>();
+    id1->create<core::drawable::SingleDrawable>();
     auto id2 = object_manager().create<GameObject>();
     auto id3 = object_manager().create<Object>();
     world_manager().add_object(id1);
