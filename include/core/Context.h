@@ -20,11 +20,24 @@ namespace core
         friend class Engine;
 
     public:
+        using Roi = typename Screen::Roi;
+        using Id = uint32_t;
         ScreenManager(const ScreenManager &) = delete;
         ScreenManager &operator=(const ScreenManager &) = delete;
-        Screen* create_screen();
+        Screen* create_screen(const Roi& roi, uint32_t z_order);
+        void remove_screen(Id id);
     private:
-        ScreenManager() = default;
+        using Map = std::map<Id, std::unique_ptr<Screen>>;
+        using const_iterator =  typename Map::const_iterator;
+        using iterator = typename Map::iterator;
+
+        explicit ScreenManager(SDL_Renderer* renderer);
+        const_iterator cbegin() const;
+        const_iterator cend() const;
+        iterator begin();
+        iterator end();
+        SDL_Renderer* _renderer;
+        Map _map;
     };
 
     class EventManager

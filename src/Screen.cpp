@@ -4,7 +4,7 @@
 
 using namespace core;
 
-Screen::Screen(const Screen::Roi &roi, int z_order, SDL_Renderer *renderer)
+Screen::Screen(const Screen::Roi &roi, uint32_t z_order, SDL_Renderer *renderer)
         :
         _roi(roi),
         _renderer(renderer),
@@ -42,12 +42,17 @@ int Screen::z_order() const
     return _z_order;
 }
 
+const Screen::Roi& Screen::roi() const
+{
+    return _roi;
+}
+
 void Screen::change_z_order(int z_order)
 {
     _z_order = z_order;
 }
 
-const SDL_Texture* Screen::render()
+SDL_Texture* Screen::render()
 {
     if (_camera != nullptr && _texture != nullptr)
     {

@@ -74,19 +74,8 @@ void Engine::main_loop()
 {
     _running = true;
     EventManager event_manager;
-    ScreenManager screen_manager;
     ContextManager context_manager;
-    Context *context = context_manager.load_context(_config.application.entry_point.c_str(), event_manager,
-                                                    screen_manager);
-    if (context == nullptr)
-    {
-        LOG_E("Invalid context.")
-        return;
-    }
 
-    LOG_S("Initializing context...")
-    context->initialize();
-    LOG_S("Done.")
 
     if (!create_window())
     {
@@ -98,6 +87,20 @@ void Engine::main_loop()
         return;
     }
 
+    ScreenManager screen_manager(_renderer);
+
+    Context *context = context_manager.load_context(_config.application.entry_point.c_str(),
+                                                    event_manager,
+                                                    screen_manager);
+    if (context == nullptr)
+    {
+        LOG_E("Invalid context.")
+        return;
+    }
+
+    LOG_S("Initializing context...")
+    context->initialize();
+    LOG_S("Done.")
     SDL_Event sdl_event;
     while (_running)
     {
@@ -130,6 +133,21 @@ void Engine::main_loop()
             }
         }
         context->evaluate();
+        std::multimap<uint32_t, Screen*> screens;
+        for (auto& item: screen_manager)
+        {
+            Screen* screen = item.second.get();
+            screens.emplace(screen->unique_id(), screen);
+        }
+        for (auto& item: screens)
+        {
+            Screen* screen = item.second;
+            SDL_Rect from = {0, 0, (int32_t)screen->roi().width(), (int32_t)screen->roi().height()};
+            SDL_Rect to = {(int32_t)screen->roi().top_left.x, (int32_t)screen->roi().top_left.y,
+                           (int32_t)screen->roi().width(), (int32_t)screen->roi().height()};
+            SDL_RenderCopy(_renderer, screen->render(), &from, &to);
+        }
+        SDL_RenderPresent(_renderer);
     }
     context_manager.unload_context(context->unique_id());
 }

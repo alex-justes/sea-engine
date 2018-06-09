@@ -1,9 +1,47 @@
 #include <list>
+#include <core/Context.h>
+
 #include "SDL.h"
 #include "core/Context.h"
 #include "Log.h"
 
 using namespace core;
+
+ScreenManager::ScreenManager(SDL_Renderer *renderer)
+: _renderer(renderer)
+{
+
+}
+
+Screen *ScreenManager::create_screen(const ScreenManager::Roi &roi, uint32_t z_order)
+{
+    auto screen = new Screen(roi, z_order, _renderer);
+    _map.emplace(screen->unique_id(), screen);
+    return screen;
+}
+
+void ScreenManager::remove_screen(ScreenManager::Id id)
+{
+    _map.erase(id);
+}
+
+ScreenManager::const_iterator ScreenManager::cbegin() const
+{
+    return _map.cbegin();
+}
+ScreenManager::const_iterator ScreenManager::cend() const
+{
+    return _map.cend();
+}
+
+ScreenManager::iterator ScreenManager::begin()
+{
+    return _map.begin();
+}
+ScreenManager::iterator ScreenManager::end()
+{
+    return _map.end();
+}
 
 Context *ContextManager::load_context(const char* obj_file, EventManager &event_manager, ScreenManager &screen_manager)
 {

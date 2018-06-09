@@ -17,13 +17,14 @@ namespace core
         Screen() = delete;
         using Roi = helpers::containers::Rect2D<uint32_t>;
         using Point = helpers::containers::Point2D<int32_t>;
-        const SDL_Texture* render();
+        SDL_Texture* render();
         void attach_camera(const Camera* camera);
         void detach_camera();
+        const Roi& roi() const;
         int z_order() const;
         virtual ~Screen();
     protected:
-        Screen(const Roi& roi, int z_order, SDL_Renderer* renderer);
+        Screen(const Roi& roi, uint32_t z_order, SDL_Renderer* renderer);
         void render(const drawable::Drawable* drawable, const Point& position, float scale);
         void change_z_order(int z_order);
     private:
@@ -31,7 +32,7 @@ namespace core
         SDL_Texture* _texture {nullptr};
         SDL_Renderer* _renderer {nullptr};
         const Camera* _camera {nullptr};
-        int _z_order {0};
+        uint32_t _z_order {0};
     };
 }
 
