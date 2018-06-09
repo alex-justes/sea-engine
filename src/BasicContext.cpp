@@ -46,7 +46,6 @@ void WorldManager::add_object(helpers::context::Object *object)
     {
         return;
     }
-
     _objects[object->unique_id()] = object;
     LOG_D("Added %d to the world.", object->unique_id())
     auto collidable = dynamic_cast<CollidableObject *>(object);

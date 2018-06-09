@@ -32,6 +32,7 @@ namespace core
             struct
             {
                 bool full_screen{false};
+                int fps{0};
                 std::string entry_point;
             } application;
         } _config;

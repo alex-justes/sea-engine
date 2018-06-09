@@ -1,4 +1,6 @@
 #include <filesystem>
+#include <chrono>
+#include <core/Engine.h>
 #include "Log.h"
 #include "helpers/Configuration.h"
 #include "core/Engine.h"
@@ -16,6 +18,11 @@ Engine::Engine(const fs::path &config)
     _config.window.height = conf_reader.get<int>("height", "window", 640);
     _config.window.caption = conf_reader.get<std::string>("caption", "window", "");
     _config.application.full_screen = conf_reader.get<bool>("full_screen", "application", false);
+    _config.application.fps = conf_reader.get<int>("fps", "application", 60);
+    if (_config.application.fps < 1)
+    {
+        _config.application.fps = 60;
+    }
     _config.application.entry_point = conf_reader.get<std::string>("entry_point", "application", "");
     LOG_S("Done.")
 }
@@ -100,9 +107,14 @@ void Engine::main_loop()
     LOG_S("Initializing context...")
     context->initialize();
     LOG_S("Done.")
+
+    using namespace std::chrono;
+    auto desired_frame_duration = milliseconds(1000/_config.application.fps);
+
     SDL_Event sdl_event;
     while (_running)
     {
+        auto frame_start_time = steady_clock::now();
         while (SDL_PollEvent(&sdl_event) != 0)
         {
             std::shared_ptr<Event> event;
@@ -147,6 +159,14 @@ void Engine::main_loop()
             SDL_RenderCopy(_renderer, screen->render(), &from, &to);
         }
         SDL_RenderPresent(_renderer);
+        auto frame_end_time = steady_clock::now();
+        auto frame_duration = frame_end_time - frame_start_time;
+        auto delta = duration_cast<milliseconds>(desired_frame_duration - frame_duration);
+        if (delta.count() > 0)
+        {
+            // NOTE: might look weird... But int64 and overflow...
+            SDL_Delay((uint32_t)((int)(delta.count())));
+        }
     }
     context_manager.unload_context(context->unique_id());
 }
