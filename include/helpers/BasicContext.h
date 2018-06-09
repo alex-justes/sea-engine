@@ -71,6 +71,7 @@ namespace helpers::context
     {
     public:
         virtual ~WorldManager() = default;
+        void set_world_size(const Size& size);
         void add_object(Object *object);
         void remove_object(Id id);
         void remove_object(Object *object);
@@ -85,6 +86,7 @@ namespace helpers::context
         Objects _objects;
         CollisionDetector _collision_detector;
         RenderDetector _render_detector;
+        Size _world_size {0,0};
     };
 
     class ContextManager

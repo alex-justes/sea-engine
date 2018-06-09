@@ -36,6 +36,13 @@ ObjectManager::const_iterator ObjectManager::cend() const
     return _objects.cend();
 }
 
+void WorldManager::set_world_size(const Size &size)
+{
+    _world_size = size;
+    _collision_detector.set_world_size(size);
+    _render_detector.set_world_size(size);
+}
+
 void WorldManager::add_object(helpers::context::Object *object)
 {
     if (object == nullptr)
@@ -103,7 +110,7 @@ void WorldManager::update()
         }
         if (changed_in_action || updated)
         {
-            LOG_D("Update collision detetors for %d", object->unique_id())
+            LOG_D("Update collision detectors for %d", object->unique_id())
             _collision_detector.update(object->unique_id());
             _render_detector.update(object->unique_id());
         }
@@ -160,6 +167,8 @@ void BasicContext::initialize()
     subscribe(core::EventType::Mouse);
     subscribe(core::EventType::Keyboard);
 
+    world_manager().set_world_size(Size(100,100));
+
     auto object = object_manager().create<GameObject>();
     auto shape = object->set_drawable<core::drawable::DrawableRect>();
     shape->size() = Size{100, 50};
@@ -192,8 +201,11 @@ bool GameObject::update()
     if (_changed)
     {
         collision_shape() = AABB(position(), position() + _collision_size);
-        render_shape() = AABB(drawable()->bounding_box().top_left + position(),
-                              drawable()->bounding_box().bottom_right + position());
+        if (drawable() != nullptr)
+        {
+            render_shape() = AABB(drawable()->bounding_box().top_left + position(),
+                                  drawable()->bounding_box().bottom_right + position());
+        }
         _changed = false;
         return true;
     }

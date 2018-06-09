@@ -201,8 +201,8 @@ namespace core::collision_detector
             return;
         }
         auto object_info = _objects[id];
-        auto level = calc_level(this->get_shape(*(object_info.object)));
-        auto roi = calc_roi(level, this->get_shape(*(object_info.object)));
+        auto level = object_info.level;
+        auto roi = object_info.roi;
         for (uint32_t y = roi.top_left.y; y <= roi.bottom_right.y; ++y)
         {
             for (uint32_t x = roi.top_left.x; x <= roi.bottom_right.x; ++x)
