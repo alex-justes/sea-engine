@@ -59,11 +59,4 @@ target_sources(engine PRIVATE
         include/core/Types.h
         )
 
-add_executable(run "")
-target_link_libraries(run PRIVATE core::engine)
-target_sources(run PRIVATE main.cpp)
-
-add_library(test_level SHARED "")
-target_link_libraries(test_level PRIVATE core::engine)
-target_sources(test_level PRIVATE test_level.cpp)
 
