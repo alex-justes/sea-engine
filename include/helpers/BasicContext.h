@@ -38,13 +38,13 @@ namespace helpers::context
     {
     public:
         void set_collision_size(const Size &size);
-        void set_position(const Point& pos);
+        void set_position(const Point &pos);
         virtual bool update() override;
         virtual bool act() override;
         virtual ~GameObject() = default;
     private:
-        Size _collision_size {0, 0};
-        bool _changed {true};
+        Size _collision_size{0, 0};
+        bool _changed{true};
     };
 
     class ObjectManager
@@ -89,10 +89,26 @@ namespace helpers::context
 
     class ContextManager
     {
+    private:
+        using Item = core::Context *;
+        using Map = std::map<Id, Item>;
     public:
+        using iterator = typename Map::iterator;
+        using const_iterator = typename Map::const_iterator;
         virtual ~ContextManager() = default;
+        core::Context *create_context(const char *obj_file,
+                                      core::EventManager &event_manager,
+                                      core::ScreenManager &screen_manager,
+                                      bool initialize = true);
+        void remove_context(core::Context *context);
+        void remove_context(Id id);
+        iterator begin();
+        iterator end();
+        const_iterator cbegin() const;
+        const_iterator cend() const;
     private:
         core::ContextLoader _context_loader;
+        Map _map;
     };
 
     class BasicContext : public core::Context
@@ -102,13 +118,14 @@ namespace helpers::context
         BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager);
         virtual void evaluate() override;
         virtual void initialize() override;
-        virtual void process_event(const core::Event* event);
+        virtual void process_event(const core::Event *event);
     protected:
         ObjectManager &object_manager();
         WorldManager &world_manager();
     private:
         ObjectManager _object_manager;
         WorldManager _world_manager;
+        ContextManager _context_manager;
     };
 
     // ===============================================================================================

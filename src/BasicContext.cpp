@@ -16,7 +16,7 @@ void ObjectManager::remove(Object *object)
     }
 }
 
-Object* ObjectManager::get(Id id)
+Object *ObjectManager::get(Id id)
 {
     auto item = _objects.find(id);
     if (item == _objects.end())
@@ -49,13 +49,13 @@ void WorldManager::add_object(helpers::context::Object *object)
 
     _objects[object->unique_id()] = object;
     LOG_D("Added %d to the world.", object->unique_id())
-    auto collidable = dynamic_cast<CollidableObject*>(object);
+    auto collidable = dynamic_cast<CollidableObject *>(object);
     if (collidable != nullptr)
     {
         _collision_detector.add(*collidable);
         LOG_D("Added %d to collision_detector.", collidable->unique_id())
     }
-    auto renderable = dynamic_cast<RenderableObject*>(object);
+    auto renderable = dynamic_cast<RenderableObject *>(object);
     if (renderable != nullptr)
     {
         _render_detector.add(*renderable);
@@ -85,18 +85,18 @@ void WorldManager::remove_object(helpers::context::Object *object)
 
 void WorldManager::update()
 {
-    for (auto& item: _objects)
+    for (auto &item: _objects)
     {
-        auto& object = item.second;
+        auto &object = item.second;
         bool changed_in_action = false;
-        auto actor = dynamic_cast<core::actor::Actor*>(object);
+        auto actor = dynamic_cast<core::actor::Actor *>(object);
         if (actor != nullptr)
         {
             LOG_D("Act: %d", object->unique_id())
             changed_in_action = actor->act();
         }
         bool updated = false;
-        auto updatable = dynamic_cast<core::behavior::Updatable*>(object);
+        auto updatable = dynamic_cast<core::behavior::Updatable *>(object);
         if (updatable != nullptr)
         {
             LOG_D("Update: %d", object->unique_id())
@@ -118,12 +118,12 @@ BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManage
 
 }
 
-ObjectManager& BasicContext::object_manager()
+ObjectManager &BasicContext::object_manager()
 {
     return _object_manager;
 }
 
-WorldManager& BasicContext::world_manager()
+WorldManager &BasicContext::world_manager()
 {
     return _world_manager;
 }
@@ -143,6 +143,13 @@ void BasicContext::evaluate()
     world_manager().update();
 
     // Evaluate all available contexts
+    for (auto &item: _context_manager)
+    {
+        auto &context = item.second;
+        context->evaluate();
+    }
+
+    // TODO: update cameras
 }
 
 void BasicContext::process_event(const core::Event *event)
@@ -156,7 +163,7 @@ void BasicContext::initialize()
 
     auto object = object_manager().create<GameObject>();
     auto shape = object->set_drawable<core::drawable::DrawableRect>();
-    shape->size() = Size {100, 50};
+    shape->size() = Size{100, 50};
 
     auto id2 = object_manager().create<GameObject>();
     auto id3 = object_manager().create<Object>();
@@ -186,20 +193,8 @@ bool GameObject::update()
     if (_changed)
     {
         collision_shape() = AABB(position(), position() + _collision_size);
-        auto single = dynamic_cast<core::drawable::SingleDrawable*>(this);
-        auto compound = dynamic_cast<core::drawable::CompoundDrawable*>(this);
-        if (single != nullptr)
-        {
-            auto rect = dynamic_cast<core::drawable::DrawableRect*>(this);
-            if (rect != nullptr)
-            {
-                render_shape() = AABB(position(), position() + rect->size());
-            }
-        }
-        else if (compound != nullptr)
-        {
-            // TODO: implement
-        }
+        render_shape() = AABB(drawable()->bounding_box().top_left + position(),
+                              drawable()->bounding_box().bottom_right + position());
         _changed = false;
         return true;
     }
@@ -211,3 +206,58 @@ bool GameObject::act()
     return false;
 }
 
+core::Context *ContextManager::create_context(const char *obj_file,
+                                              core::EventManager &event_manager,
+                                              core::ScreenManager &screen_manager,
+                                              bool initialize)
+{
+    auto context = _context_loader.load_context(obj_file, event_manager, screen_manager);
+    if (context == nullptr)
+    {
+        return nullptr;
+    }
+    if (initialize)
+    {
+        context->initialize();
+    }
+    _map.emplace(context->unique_id(), context);
+    return context;
+}
+
+void ContextManager::remove_context(core::Context *context)
+{
+    if (context != nullptr)
+    {
+        remove_context(context->unique_id());
+    }
+}
+
+void ContextManager::remove_context(Id id)
+{
+    if (_map.count(id) == 0)
+    {
+        return;
+    }
+    _context_loader.unload_context(id);
+    _map.erase(id);
+}
+
+ContextManager::iterator ContextManager::begin()
+{
+    return _map.begin();
+}
+
+ContextManager::iterator ContextManager::end()
+{
+    return _map.end();
+}
+
+ContextManager::const_iterator ContextManager::cbegin() const
+{
+    return _map.cbegin();
+}
+
+ContextManager::const_iterator ContextManager::cend() const
+{
+    return _map.cend();
+}

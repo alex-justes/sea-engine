@@ -13,6 +13,11 @@ const Size& DrawableRect::size() const
     return _size;
 }
 
+AABB DrawableRect::bounding_box() const
+{
+    return AABB(Point(0,0), _size);
+}
+
 const RGBA& DrawableRect::color() const
 {
     return _color;

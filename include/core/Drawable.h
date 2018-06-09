@@ -21,6 +21,7 @@ namespace core::drawable
     public:
         Drawable() = default;
         virtual ~Drawable() = default;
+        virtual AABB bounding_box() const = 0;
     };
 
     class SingleDrawable: public Drawable
@@ -42,6 +43,7 @@ namespace core::drawable
         const RGBA& color() const;
         Size& size();
         RGBA& color();
+        virtual AABB bounding_box() const override;
     private:
         Size _size;
         RGBA _color;
