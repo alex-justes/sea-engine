@@ -83,12 +83,17 @@ namespace core
         Context(EventManager &event_manager, ScreenManager &screen_manager);
         virtual void evaluate() = 0;
         virtual void initialize() = 0;
+        virtual void pause();
+        virtual void unpause();
+        bool paused() const;
+        bool finished() const;
         virtual ~Context();
     protected:
         using Item = typename EventManager::Item;
         virtual void subscribe(EventType t) final;
         virtual void unsubscribe(EventType t) final;
         virtual bool events_pop(Item& event) final;
+        void set_finished(bool status);
     private:
         using EventQueue = typename EventManager::EventQueue;
         void enqueue(Item event);
@@ -98,6 +103,8 @@ namespace core
         EventManager &_external_event_manager;
         ScreenManager &_screen_manager;
         EventQueue _event_queue;
+        bool _finished {true};
+        bool _paused {false};
     };
 }
 

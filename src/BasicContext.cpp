@@ -98,19 +98,19 @@ void WorldManager::update()
         auto actor = dynamic_cast<core::actor::Actor *>(object);
         if (actor != nullptr)
         {
-            LOG_D("Act: %d", object->unique_id())
+            //LOG_D("Act: %d", object->unique_id())
             changed_in_action = actor->act();
         }
         bool updated = false;
         auto updatable = dynamic_cast<core::behavior::Updatable *>(object);
         if (updatable != nullptr)
         {
-            LOG_D("Update: %d", object->unique_id())
+           // LOG_D("Update: %d", object->unique_id())
             updated = updatable->update();
         }
         if (changed_in_action || updated)
         {
-            LOG_D("Update collision detectors for %d", object->unique_id())
+           // LOG_D("Update collision detectors for %d", object->unique_id())
             _collision_detector.update(object->unique_id());
             _render_detector.update(object->unique_id());
         }
@@ -142,6 +142,7 @@ void BasicContext::evaluate()
     {
         process_event(event.get());
     }
+    LOG_D("tick...")
 
     // TODO: check for collisions
 
@@ -152,7 +153,10 @@ void BasicContext::evaluate()
     for (auto &item: _context_manager)
     {
         auto &context = item.second;
-        context->evaluate();
+        if (!context->paused())
+        {
+            context->evaluate();
+        }
     }
 
     // TODO: update cameras
@@ -164,6 +168,7 @@ void BasicContext::process_event(const core::Event *event)
 
 void BasicContext::initialize()
 {
+    set_finished(false);
     subscribe(core::EventType::Mouse);
     subscribe(core::EventType::Keyboard);
 

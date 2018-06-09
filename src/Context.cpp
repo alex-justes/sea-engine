@@ -194,3 +194,28 @@ bool Context::events_pop(Item &event)
     }
     return false;
 }
+
+bool Context::finished() const
+{
+    return _finished;
+}
+
+bool Context::paused() const
+{
+    return _paused;
+}
+
+void Context::pause()
+{
+    _paused = true;
+}
+
+void Context::unpause()
+{
+    _paused = false;
+}
+
+void Context::set_finished(bool status)
+{
+    _finished = status;
+}

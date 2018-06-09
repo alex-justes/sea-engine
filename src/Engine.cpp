@@ -112,7 +112,7 @@ void Engine::main_loop()
     auto desired_frame_duration = milliseconds(1000/_config.application.fps);
 
     SDL_Event sdl_event;
-    while (_running)
+    while (_running && !context->finished())
     {
         auto frame_start_time = steady_clock::now();
         while (SDL_PollEvent(&sdl_event) != 0)
