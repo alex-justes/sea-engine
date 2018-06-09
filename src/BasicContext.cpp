@@ -265,28 +265,6 @@ void BasicContext::process_event(const core::Event *event)
 
 void BasicContext::initialize()
 {
-    set_finished(false);
-    subscribe(core::EventType::Mouse);
-    subscribe(core::EventType::Keyboard);
-
-    world_manager().set_world_size(Size(640, 480));
-
-    auto object = object_manager().create<GameObject>();
-    auto shape = object->set_drawable<core::drawable::DrawableRect>();
-    shape->size() = Size{100, 30};
-    shape->color() = core::drawable::RGBA{255, 255, 0, 128};
-
-    auto id2 = object_manager().create<GameObject>();
-    auto id3 = object_manager().create<Object>();
-    world_manager().add_object(object);
-    world_manager().add_object(id2);
-    world_manager().add_object(id3);
-//    object_manager().remove(id2);
-//    id2 = object_manager().create<GameObject>();
-    world_manager().update_objects();
-    auto camera = world_manager().create_camera(Point(0, 0), Size(100, 900));
-    auto screen = screen_manager().create_screen(Roi(20, 20, 220, 220), 0);
-    screen_manager().attach_camera(camera, screen);
 }
 
 
