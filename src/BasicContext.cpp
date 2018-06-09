@@ -173,10 +173,15 @@ void WorldManager::update_cameras()
         if (camera->active())
         {
             // Weirdo... %|
+            // All Hail Big Flying Spaghetti Monster!
             Point cam_pos = ((const core::Camera *) (camera.get()))->position();
             Point cam_size = ((const core::Camera *) (camera.get()))->size();
             Point bottom_right = cam_pos + cam_size;
-            Roi roi{cam_pos,
+            Roi roi{
+                    Point{
+                            std::min(cam_pos.x, _world_size.x),
+                            std::min(cam_pos.y, _world_size.y)
+                    },
                     Point{
                             std::min(bottom_right.x, _world_size.x),
                             std::min(bottom_right.y, _world_size.y)
@@ -263,7 +268,7 @@ void BasicContext::initialize()
 //    object_manager().remove(id2);
 //    id2 = object_manager().create<GameObject>();
     world_manager().update_objects();
-    auto camera = world_manager().create_camera(Point(0, 0), Size(100, 400));
+    auto camera = world_manager().create_camera(Point(0, 0), Size(100, 900));
     auto screen = screen_manager().create_screen(Roi(20, 20, 220, 220), 0);
     screen_manager().attach_camera(camera, screen);
 }
