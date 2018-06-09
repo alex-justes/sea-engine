@@ -59,8 +59,8 @@ namespace helpers::context
     public:
         virtual ~WorldManager() = default;
         void add_object(Object *object);
-        // void remove_object(Id id);
-        // void remove_object(Object *object);
+        void remove_object(Id id);
+        void remove_object(Object *object);
     private:
         using Item = Object *;
         using Objects = std::map<Id, Item>;

@@ -12,7 +12,7 @@ void ObjectManager::remove(Object *object)
 {
     if (object != nullptr)
     {
-        _objects.erase(object->unique_id());
+        remove(object->unique_id());
     }
 }
 
@@ -63,6 +63,25 @@ void WorldManager::add_object(helpers::context::Object *object)
     }
 }
 
+void WorldManager::remove_object(Id id)
+{
+    if (_objects.count(id) == 0)
+    {
+        return;
+    }
+    _collision_detector.remove(id);
+    _render_detector.remove(id);
+    _objects.erase(id);
+}
+
+void WorldManager::remove_object(helpers::context::Object *object)
+{
+    if (object == nullptr)
+    {
+        return;
+    }
+    remove_object(object->unique_id());
+}
 
 BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager)
         :
@@ -95,7 +114,7 @@ void BasicContext::initialize()
     subscribe(core::EventType::Mouse);
     subscribe(core::EventType::Keyboard);
     auto id1 = object_manager().create<GameObject>();
-    id1->create<core::drawable::SingleDrawable>();
+    auto shape = id1->create_drawable<core::drawable::Rect>();
     auto id2 = object_manager().create<GameObject>();
     auto id3 = object_manager().create<Object>();
     world_manager().add_object(id1);

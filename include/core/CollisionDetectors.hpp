@@ -29,6 +29,7 @@ namespace core::collision_detector
 
         virtual void add(const T &object) = 0;
         virtual void remove(const T &object) = 0;
+        virtual void remove(Id id) = 0;
         virtual void update(const T &object) = 0;
         virtual SingleCollisions broad_check(const Point2D &pt) = 0;
         virtual SingleCollisions broad_check(const Rect2D &rc) = 0;
@@ -39,10 +40,10 @@ namespace core::collision_detector
     protected:
         static const AABB &get_shape(const T &object)
         {
-            if constexpr (std::is_same_v < behavior_type, core::behavior::CollisionShape<AABB>>)
+            if constexpr (std::is_same_v<behavior_type, core::behavior::CollisionShape<AABB>>)
             {
                 return object.collision_shape();
-            } else if constexpr (std::is_same_v < behavior_type, core::behavior::RenderShape<AABB>>)
+            } else if constexpr (std::is_same_v<behavior_type, core::behavior::RenderShape<AABB>>)
             {
                 return object.render_shape();
             }
@@ -61,8 +62,8 @@ namespace core::collision_detector
     template<class T, template<class> class Behavior>
     constexpr bool BroadAABBCollisionDetector<T, Behavior>::check_traits()
     {
-        constexpr bool has_collision_shape = std::is_base_of_v < core::behavior::CollisionShape<AABB>, behavior_type> ||
-        std::is_base_of_v<core::behavior::RenderShape<AABB>, behavior_type>;
+        constexpr bool has_collision_shape = std::is_base_of_v<core::behavior::CollisionShape<AABB>, behavior_type> ||
+                                             std::is_base_of_v<core::behavior::RenderShape<AABB>, behavior_type>;
         constexpr bool has_unique_id = std::is_base_of_v<core::behavior::IUniqueId, T>;
         return has_collision_shape && has_unique_id;
     }
@@ -72,6 +73,7 @@ namespace core::collision_detector
     class HierarchicalSpatialGrid : public BroadAABBCollisionDetector<T, Behavior>
     {
     public:
+        using Id = typename T::unique_id_type;
         using value_type = typename BroadAABBCollisionDetector<T, Behavior>::value_type;
         using behavior_type = typename BroadAABBCollisionDetector<T, Behavior>::behavior_type;
         using Size = helpers::containers::Size2D<uint32_t>;
@@ -85,15 +87,15 @@ namespace core::collision_detector
 
         void add(const T &object) override;
         void remove(const T &object) override;
+        void remove(Id id) override;
         SingleCollisions broad_check(const Point2D &pt) override;
         void update(const T &object) override;
         SingleCollisions broad_check(const Rect2D &rc) override;
         PairCollisions broad_check() override;
 
-        void set_world_size(const Size& size);
+        void set_world_size(const Size &size);
 
     private:
-        using Id = typename T::unique_id_type;
         using Map = std::set<Id>;
         using Grid = helpers::containers::Matrix<Map, 2>;
         using GridMap = std::map<uint32_t, Grid>;
@@ -107,13 +109,13 @@ namespace core::collision_detector
         {
             const T *object{nullptr};
             uint32_t level{0};
-            Rect2D roi{0,0,0,0};
+            Rect2D roi{0, 0, 0, 0};
         };
 
-        Size _world_size {0, 0};
+        Size _world_size{0, 0};
         GridMap _grid_map;
-        std::map <Id, ObjectInfo> _objects;
-        std::map <uint32_t, uint32_t> _objects_per_level;
+        std::map<Id, ObjectInfo> _objects;
+        std::map<uint32_t, uint32_t> _objects_per_level;
     };
 
 
@@ -127,13 +129,13 @@ namespace core::collision_detector
     uint32_t HierarchicalSpatialGrid<T, Behavior>::calc_level(const AABB &shape)
     {
         auto max_side = std::max(shape.width(), shape.height());
-        return (uint32_t)(std::log2(max_side));
+        return (uint32_t) (std::log2(max_side));
     }
 
     template<class T, template<class> class Behavior>
     uint32_t HierarchicalSpatialGrid<T, Behavior>::calc_cell_size(uint32_t level)
     {
-        return (uint32_t)(std::exp2(level));
+        return (uint32_t) (std::exp2(level));
     }
 
     template<class T, template<class> class Behavior>
@@ -194,12 +196,19 @@ namespace core::collision_detector
     void HierarchicalSpatialGrid<T, Behavior>::remove(const T &object)
     {
         auto id = object.unique_id();
+        remove(id);
+    }
+
+    template<class T, template<class> class Behavior>
+    void HierarchicalSpatialGrid<T, Behavior>::remove(Id id)
+    {
         if (_objects.count(id) == 0)
         {
             return;
         }
-        auto level = calc_level(this->get_shape(object));
-        auto roi = calc_roi(level, this->get_shape(object));
+        auto object_info = _objects[id];
+        auto level = calc_level(this->get_shape(*(object_info.object)));
+        auto roi = calc_roi(level, this->get_shape(*(object_info.object)));
         for (uint32_t y = roi.top_left.y; y <= roi.bottom_right.y; ++y)
         {
             for (uint32_t x = roi.top_left.x; x <= roi.bottom_right.x; ++x)
@@ -213,6 +222,7 @@ namespace core::collision_detector
             _grid_map.erase(level);
         }
         _objects.erase(id);
+
     }
 
     template<class T, template<class> class Behavior>

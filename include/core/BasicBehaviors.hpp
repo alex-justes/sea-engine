@@ -85,7 +85,7 @@ namespace core::behavior
         uint32_t z_order() const;
         const Drawable *drawable() const;
         template <class T, class ... Types>
-        T* create(Types &&... args);
+        T* create_drawable(Types &&... args);
     protected:
         Drawable *drawable();
     private:
@@ -95,7 +95,7 @@ namespace core::behavior
 
     // ===============================================
     template<class T, class... Types>
-    T *Renderable::create(Types &&... args)
+    T *Renderable::create_drawable(Types &&... args)
     {
         static_assert(std::is_base_of_v<Drawable , T>, "T should be derived from Drawable");
         auto ptr = new T(std::forward<Types>(args)...);

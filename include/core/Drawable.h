@@ -37,13 +37,13 @@ namespace core::drawable
     class Rect: public SingleDrawable
     {
     public:
-        using Roi = helpers::containers::Rect2D<uint32_t>;
-        const Roi& roi() const;
+        using Size = helpers::containers::Size2D<uint32_t>;
+        const Size& size() const;
         const RGBA& color() const;
-        Roi& roi();
+        Size& size();
         RGBA& color();
     private:
-        Roi _roi;
+        Size _size;
         RGBA _color;
     };
 };

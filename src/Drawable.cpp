@@ -8,18 +8,18 @@ std::list<const Drawable *> CompoundDrawable::get_drawables() const
     return std::list<const Drawable *>();
 }
 
-const Rect::Roi& Rect::roi() const
+const Rect::Size& Rect::size() const
 {
-    return _roi;
+    return _size;
 }
 
 const RGBA& Rect::color() const
 {
     return _color;
 }
-Rect::Roi &Rect::roi()
+Rect::Size &Rect::size()
 {
-    return _roi;
+    return _size;
 }
 
 RGBA &Rect::color()
