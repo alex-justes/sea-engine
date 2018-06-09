@@ -84,14 +84,15 @@ namespace core
     public:
         Context() = delete;
         Context(EventManager &event_manager, ScreenManager &screen_manager);
-        virtual void evaluate();
-        virtual void initialize();
+        virtual void evaluate() = 0;
+        virtual void initialize() = 0;
         virtual ~Context();
     protected:
+        using Item = typename EventManager::Item;
         virtual void subscribe(EventType t) final;
         virtual void unsubscribe(EventType t) final;
+        virtual bool events_pop(Item& event) final;
     private:
-        using Item = typename EventManager::Item;
         using EventQueue = typename EventManager::EventQueue;
         void enqueue(Item event);
         void subscribe_impl(EventType t);
@@ -99,6 +100,8 @@ namespace core
         void unsubscribe_impl();
         EventManager &_external_event_manager;
         ScreenManager &_screen_manager;
+        ContextManager _context_manager;
+        EventManager _event_manager;
         EventQueue _event_queue;
     };
 }

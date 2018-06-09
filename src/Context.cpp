@@ -1,6 +1,4 @@
 #include <list>
-#include <core/Context.h>
-
 #include "SDL.h"
 #include "core/Context.h"
 #include "Log.h"
@@ -154,21 +152,6 @@ Context::~Context()
     unsubscribe_impl();
 }
 
-void Context::evaluate()
-{
-    while(!_event_queue.empty())
-    {
-        _event_queue.pop();
-        LOG_S("Event!")
-    }
-}
-
-void Context::initialize()
-{
-    subscribe(EventType::Mouse);
-    subscribe(EventType::Keyboard);
-}
-
 void Context::subscribe(EventType t)
 {
     subscribe_impl(t);
@@ -197,4 +180,15 @@ void Context::unsubscribe_impl(EventType t)
 void Context::unsubscribe_impl()
 {
     _external_event_manager.unsubscribe(this);
+}
+bool Context::events_pop(Item& event)
+{
+    event.reset();
+    if (!_event_queue.empty())
+    {
+        event = std::move(_event_queue.back());
+        _event_queue.pop();
+        return true;
+    }
+    return false;
 }

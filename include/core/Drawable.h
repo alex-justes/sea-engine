@@ -35,7 +35,8 @@ namespace core::drawable
         const Rect& rect() const;
         const RGBA& color() const;
     private:
-
+        Rect _rect;
+        RGBA _color;
     };
 
     class SingleDrawable: public Drawable

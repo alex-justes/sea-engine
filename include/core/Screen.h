@@ -4,7 +4,8 @@
 #include "helpers/Containers.hpp"
 #include "core/BasicBehaviors.hpp"
 #include "core/Camera.h"
-#include "SDL.h"
+// TODO: strange behavior (simple #include "SDL.h" do not work)
+#include "SDL2/SDL.h"
 
 namespace core
 {
