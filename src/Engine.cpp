@@ -137,7 +137,7 @@ void Engine::main_loop()
         for (auto& item: screen_manager)
         {
             Screen* screen = item.second.get();
-            screens.emplace(screen->unique_id(), screen);
+            screens.emplace(screen->z_order(), screen);
         }
         for (auto& item: screens)
         {

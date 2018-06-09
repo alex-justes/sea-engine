@@ -47,7 +47,7 @@ const Screen::Roi& Screen::roi() const
     return _roi;
 }
 
-void Screen::change_z_order(int z_order)
+void Screen::change_z_order(uint32_t z_order)
 {
     _z_order = z_order;
 }

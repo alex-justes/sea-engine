@@ -26,7 +26,7 @@ namespace core
     protected:
         Screen(const Roi& roi, uint32_t z_order, SDL_Renderer* renderer);
         void render(const drawable::Drawable* drawable, const Point& position, float scale);
-        void change_z_order(int z_order);
+        void change_z_order(uint32_t z_order);
     private:
         Roi _roi;
         SDL_Texture* _texture {nullptr};
