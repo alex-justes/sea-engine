@@ -67,7 +67,7 @@ namespace core::behavior
     class Position: public virtual IBehavior
     {
     public:
-        using Point = helpers::containers::Point2D<uint32_t>;
+        using Point = helpers::containers::Point2D<int32_t>;
         const Point& position() const;
     protected:
         Point& position();

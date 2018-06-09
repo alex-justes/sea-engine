@@ -16,7 +16,7 @@ namespace core
     public:
         Screen() = delete;
         using Roi = helpers::containers::Rect2D<uint32_t>;
-        using Point = helpers::containers::Point2D<uint32_t>;
+        using Point = helpers::containers::Point2D<int32_t>;
         const SDL_Texture* render();
         int z_order() const;
         virtual ~Screen();

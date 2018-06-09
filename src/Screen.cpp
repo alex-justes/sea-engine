@@ -69,11 +69,12 @@ void Screen::render(const drawable::Drawable *drawable, const Point &position, f
         auto rect = dynamic_cast<const drawable::RectShape *>(single->shape());
         if (rect != nullptr)
         {
-            auto[x, y] = rect->rect().top_left;
-            x = (uint32_t)(scale * x) + position.x;
-            y = (uint32_t)(scale * y) + position.y;
-            auto w = (uint32_t)(scale * rect->rect().width());
-            auto h = (uint32_t)(scale * rect->rect().height());
+            auto x = (int32_t)(rect->rect().top_left.x);
+            auto y = (int32_t)(rect->rect().top_left.y);
+            x = (int32_t)(scale * x) + position.x;
+            y = (int32_t)(scale * y) + position.y;
+            auto w = (int32_t)(scale * rect->rect().width());
+            auto h = (int32_t)(scale * rect->rect().height());
             SDL_Rect fill_rect = {x, y, w, h};
             const auto& color = rect->color();
             SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, color.a);
