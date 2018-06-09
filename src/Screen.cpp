@@ -67,14 +67,18 @@ SDL_Texture* Screen::render()
         {
             map.emplace(object->z_order(), object);
         }
+        float scale = std::max((float)_roi.width() / camera->size().x, (float)_roi.height() / camera->size().y);
+        float old_scale_x(1.f), old_scale_y(1.f);
+        SDL_RenderGetScale(_renderer, &old_scale_x, &old_scale_y);
+        SDL_RenderSetScale(_renderer, scale, scale);
         for (const auto &item: map)
         {
             const auto &object = item.second;
-            float scale = std::max(camera->size().x / _roi.width(), camera->size().y / _roi.height());
             PointI32 obj_pos = {object->position().x, object->position().y};
             PointI32 cam_pos = {camera->position().x, camera->position().y};
             render(object->drawable(), obj_pos - cam_pos, scale);
         }
+        SDL_RenderSetScale(_renderer, old_scale_x, old_scale_y);
         SDL_SetRenderTarget(_renderer, nullptr);
     }
     return _texture;
@@ -89,9 +93,9 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
         auto rect = dynamic_cast<const drawable::DrawableRect *>(single);
         if (rect != nullptr)
         {
-            auto w = (int32_t)(scale * rect->size().x);
-            auto h = (int32_t)(scale * rect->size().y);
-            SDL_Rect fill_rect = {position.x, position.y, w, h};
+//            auto w = (int32_t)(scale * rect->size().x);
+//            auto h = (int32_t)(scale * rect->size().y);
+            SDL_Rect fill_rect = {position.x, position.y, (int32_t)rect->size().x, (int32_t)rect->size().y};
             const auto& color = rect->color();
             SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, color.a);
             SDL_RenderFillRect(_renderer, &fill_rect);

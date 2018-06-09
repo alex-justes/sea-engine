@@ -155,6 +155,8 @@ void Engine::main_loop()
             Screen* screen = item.second.get();
             screens.emplace(screen->z_order(), screen);
         }
+        SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
+        SDL_RenderClear(_renderer);
         for (auto& item: screens)
         {
             Screen* screen = item.second;
