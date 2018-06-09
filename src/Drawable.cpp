@@ -14,3 +14,12 @@ const DrawableShape *SingleDrawable::shape() const
     return _shape.get();
 }
 
+const RectShape::Rect& RectShape::rect() const
+{
+    return _rect;
+}
+
+const RGBA& RectShape::color() const
+{
+    return _color;
+}
