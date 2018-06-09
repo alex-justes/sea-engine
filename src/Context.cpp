@@ -51,6 +51,26 @@ bool ScreenManager::detach_camera(core::Camera *camera, Id screen)
     return true;
 }
 
+bool ScreenManager::detach_camera(core::Camera *camera)
+{
+    if (camera == nullptr)
+    {
+        return false;
+    }
+    bool detached = false;
+    for (auto& item: _screens)
+    {
+        auto& [id, screen] = item;
+        if (screen->camera_attached() && camera->unique_id() == screen->_camera->unique_id())
+        {
+            detach_camera(camera, id);
+            detached = true;
+            break;
+        }
+    }
+    return detached;
+}
+
 ScreenManager::const_iterator ScreenManager::cbegin() const
 {
     return _screens.cbegin();

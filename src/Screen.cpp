@@ -35,7 +35,7 @@ void Screen::attach_camera(Camera *camera)
 
 void Screen::detach_camera()
 {
-    LOG_D("Camera %d detached to Screen %d", _camera->unique_id(), unique_id())
+    LOG_D("Camera %d detached from Screen %d", _camera->unique_id(), unique_id())
     _camera = nullptr;
 }
 

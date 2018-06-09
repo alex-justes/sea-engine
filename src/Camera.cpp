@@ -67,6 +67,15 @@ Camera* CameraManager::create_camera(const Point& position, const Size& size)
     return ptr;
 }
 
+Camera* CameraManager::get_camera(Id camera)
+{
+    if (_cameras.count(camera) == 0)
+    {
+        return nullptr;
+    }
+    return _cameras[camera].get();
+}
+
 // TODO: Make it safe to any screen
 void CameraManager::remove_camera(Id camera)
 {

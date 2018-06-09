@@ -36,6 +36,20 @@ ObjectManager::const_iterator ObjectManager::cend() const
     return _objects.cend();
 }
 
+WorldManager::WorldManager(core::ScreenManager &screen_manager)
+:_screen_manager(screen_manager)
+{
+}
+
+WorldManager::~WorldManager()
+{
+    for (auto& item: _camera_manager)
+    {
+        core::Camera* camera = item.second.get();
+        _screen_manager.detach_camera(camera);
+    }
+}
+
 void WorldManager::set_world_size(const Size &size)
 {
     _world_size = size;
@@ -105,12 +119,12 @@ void WorldManager::update_objects()
         auto updatable = dynamic_cast<core::behavior::Updatable *>(object);
         if (updatable != nullptr)
         {
-           // LOG_D("Update: %d", object->unique_id())
+            // LOG_D("Update: %d", object->unique_id())
             updated = updatable->update();
         }
         if (changed_in_action || updated)
         {
-           // LOG_D("Update collision detectors for %d", object->unique_id())
+            // LOG_D("Update collision detectors for %d", object->unique_id())
             _collision_detector.update(object->unique_id());
             _render_detector.update(object->unique_id());
         }
@@ -122,13 +136,14 @@ WorldManager &BasicContext::world_manager()
     return _world_manager;
 }
 
-core::Camera* WorldManager::create_camera(const Point &position, const Size &size)
+core::Camera *WorldManager::create_camera(const Point &position, const Size &size)
 {
     return _camera_manager.create_camera(position, size);
 }
-void WorldManager::remove_camera(Id camera)
+void WorldManager::remove_camera(Id id)
 {
-    _camera_manager.remove_camera(camera);
+    auto camera = _camera_manager.get_camera(id);
+    remove_camera(camera);
 }
 
 void WorldManager::remove_camera(core::Camera *camera)
@@ -137,23 +152,24 @@ void WorldManager::remove_camera(core::Camera *camera)
     {
         return;
     }
+    _screen_manager.detach_camera(camera);
     _camera_manager.remove_camera(camera->unique_id());
 }
 
 void WorldManager::update_cameras()
 {
-    for (auto& item: _camera_manager)
+    for (auto &item: _camera_manager)
     {
-        auto& camera = item.second;
+        auto &camera = item.second;
         if (camera->active())
         {
             // Weirdo... %|
-            Point cam_pos = ((const core::Camera*)(camera.get()))->position();
-            Point cam_size = ((const core::Camera*)(camera.get()))->size();
-            Roi roi {cam_pos, cam_pos + cam_size};
+            Point cam_pos = ((const core::Camera *) (camera.get()))->position();
+            Point cam_size = ((const core::Camera *) (camera.get()))->size();
+            Roi roi{cam_pos, cam_pos + cam_size};
             auto collisions = _render_detector.broad_check(roi);
             typename core::Camera::List list;
-            for (const auto& id: collisions)
+            for (const auto &id: collisions)
             {
                 auto renderable = dynamic_cast<typename core::Camera::ObjectType>(_objects[id]);
                 if (renderable != nullptr)
@@ -168,7 +184,8 @@ void WorldManager::update_cameras()
 
 BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager)
         :
-        Context(event_manager, screen_manager)
+        Context(event_manager, screen_manager),
+        _world_manager(screen_manager)
 {
 
 }
@@ -220,8 +237,8 @@ void BasicContext::initialize()
 
     auto object = object_manager().create<GameObject>();
     auto shape = object->set_drawable<core::drawable::DrawableRect>();
-    shape->size() = Size{100, 50};
-    shape->color() = core::drawable::RGBA {0, 255, 0, 0};
+    shape->size() = Size{100, 30};
+    shape->color() = core::drawable::RGBA{255, 255, 0, 128};
 
     auto id2 = object_manager().create<GameObject>();
     auto id3 = object_manager().create<Object>();
@@ -231,8 +248,8 @@ void BasicContext::initialize()
 //    object_manager().remove(id2);
 //    id2 = object_manager().create<GameObject>();
     world_manager().update_objects();
-    auto camera = world_manager().create_camera(Point(10,20), Size(200, 200));
-    auto screen = screen_manager().create_screen(Roi(0, 0, 640, 480), 0);
+    auto camera = world_manager().create_camera(Point(0, 0), Size(100, 400));
+    auto screen = screen_manager().create_screen(Roi(20, 20, 220, 220), 0);
     screen_manager().attach_camera(camera, screen);
 }
 

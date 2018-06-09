@@ -27,6 +27,7 @@ namespace core
         void remove_screen(Id id);
         bool attach_camera(Camera* camera, Id screen);
         bool detach_camera(Camera* camera, Id screen);
+        bool detach_camera(Camera* camera);
     private:
         using Map = std::map<Id, std::unique_ptr<Screen>>;
         using const_iterator =  typename Map::const_iterator;

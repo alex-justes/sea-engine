@@ -47,6 +47,7 @@ namespace core
 
         Camera* create_camera(const Point& position, const Size& size);
         void remove_camera(Id camera);
+        Camera* get_camera(Id camera);
 
         const_iterator cbegin() const;
         const_iterator cend() const;

@@ -71,7 +71,9 @@ namespace helpers::context
     class WorldManager
     {
     public:
-        virtual ~WorldManager() = default;
+        explicit WorldManager(core::ScreenManager& screen_manager);
+        virtual ~WorldManager();
+        void set_screen_manager(core::ScreenManager* manager);
         void set_world_size(const Size& size);
         void add_object(Object *object);
         void remove_object(Id id);
@@ -80,7 +82,7 @@ namespace helpers::context
         void update_cameras();
         core::Camera* create_camera(const Point& position, const Size& size);
         void remove_camera(core::Camera* camera);
-        void remove_camera(Id camera);
+        void remove_camera(Id id);
     private:
         using Item = Object *;
         using Objects = std::map<Id, Item>;
@@ -92,6 +94,7 @@ namespace helpers::context
         CollisionDetector _collision_detector;
         RenderDetector _render_detector;
         core::CameraManager _camera_manager;
+        core::ScreenManager& _screen_manager;
         Size _world_size {0,0};
     };
 
