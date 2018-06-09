@@ -17,3 +17,12 @@ const RGBA& Rect::color() const
 {
     return _color;
 }
+Rect::Roi &Rect::roi()
+{
+    return _roi;
+}
+
+RGBA &Rect::color()
+{
+    return _color;
+}

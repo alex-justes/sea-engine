@@ -40,6 +40,8 @@ namespace core::drawable
         using Roi = helpers::containers::Rect2D<uint32_t>;
         const Roi& roi() const;
         const RGBA& color() const;
+        Roi& roi();
+        RGBA& color();
     private:
         Roi _roi;
         RGBA _color;
