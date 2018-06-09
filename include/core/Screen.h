@@ -18,6 +18,8 @@ namespace core
         using Roi = helpers::containers::Rect2D<uint32_t>;
         using Point = helpers::containers::Point2D<int32_t>;
         const SDL_Texture* render();
+        void attach_camera(const Camera* camera);
+        void detach_camera();
         int z_order() const;
         virtual ~Screen();
     protected:

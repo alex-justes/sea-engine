@@ -27,6 +27,16 @@ Screen::~Screen()
     }
 }
 
+void Screen::attach_camera(const Camera *camera)
+{
+    _camera = camera;
+}
+
+void Screen::detach_camera()
+{
+    _camera = nullptr;
+}
+
 int Screen::z_order() const
 {
     return _z_order;

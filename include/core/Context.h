@@ -7,6 +7,7 @@
 #include <set>
 #include "core/Events.h"
 #include "core/BasicBehaviors.hpp"
+#include "core/Screen.h"
 
 namespace core
 {
@@ -21,6 +22,7 @@ namespace core
     public:
         ScreenManager(const ScreenManager &) = delete;
         ScreenManager &operator=(const ScreenManager &) = delete;
+        Screen* create_screen();
     private:
         ScreenManager() = default;
     };
