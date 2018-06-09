@@ -27,7 +27,7 @@ namespace core
         bool camera_attached();
         using PointI32 = helpers::containers::Point2D<int32_t>;
         Screen(const Roi& roi, uint32_t z_order, SDL_Renderer* renderer);
-        void render(const drawable::Drawable* drawable, const PointI32& position, float scale);
+        void render(const drawable::Drawable* drawable, const PointI32& position);
         void change_z_order(uint32_t z_order);
     private:
         Roi _roi;

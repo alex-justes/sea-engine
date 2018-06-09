@@ -67,7 +67,21 @@ SDL_Texture* Screen::render()
         {
             map.emplace(object->z_order(), object);
         }
-        float scale = std::max((float)_roi.width() / camera->size().x, (float)_roi.height() / camera->size().y);
+
+        float scale_x = (float)_roi.width() / camera->size().x;
+        float scale_y = (float)_roi.height() / camera->size().y;
+        float scale = 1.f;
+        PointI32 offset {0,0};
+        if (scale_x < scale_y)
+        {
+            scale = scale_x;
+            offset.y = (int32_t)(_roi.height() / scale - camera->size().y)/2;
+        }
+        else if (scale_y < scale_x)
+        {
+            scale = scale_y;
+            offset.x = (int32_t)(_roi.width() / scale - camera->size().x)/2;
+        }
         float old_scale_x(1.f), old_scale_y(1.f);
         SDL_RenderGetScale(_renderer, &old_scale_x, &old_scale_y);
         SDL_RenderSetScale(_renderer, scale, scale);
@@ -76,15 +90,14 @@ SDL_Texture* Screen::render()
             const auto &object = item.second;
             PointI32 obj_pos = {object->position().x, object->position().y};
             PointI32 cam_pos = {camera->position().x, camera->position().y};
-            render(object->drawable(), obj_pos - cam_pos, scale);
+            render(object->drawable(), obj_pos - cam_pos + offset);
         }
-        SDL_RenderSetScale(_renderer, old_scale_x, old_scale_y);
         SDL_SetRenderTarget(_renderer, nullptr);
     }
     return _texture;
 }
 
-void Screen::render(const drawable::Drawable *drawable, const PointI32 &position, float scale)
+void Screen::render(const drawable::Drawable *drawable, const PointI32 &position)
 {
     auto single = dynamic_cast<const drawable::SingleDrawable *>(drawable);
     if (single != nullptr)
@@ -93,8 +106,6 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
         auto rect = dynamic_cast<const drawable::DrawableRect *>(single);
         if (rect != nullptr)
         {
-//            auto w = (int32_t)(scale * rect->size().x);
-//            auto h = (int32_t)(scale * rect->size().y);
             SDL_Rect fill_rect = {position.x, position.y, (int32_t)rect->size().x, (int32_t)rect->size().y};
             const auto& color = rect->color();
             SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, color.a);
@@ -108,7 +119,7 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
     {
         for (const auto &item: compound->get_drawables())
         {
-            render(item, position, scale);
+            render(item, position);
         }
     }
 }
