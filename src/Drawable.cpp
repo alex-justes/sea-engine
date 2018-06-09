@@ -8,21 +8,21 @@ std::list<const Drawable *> CompoundDrawable::get_drawables() const
     return std::list<const Drawable *>();
 }
 
-const Rect::Size& Rect::size() const
+const Size& DrawableRect::size() const
 {
     return _size;
 }
 
-const RGBA& Rect::color() const
+const RGBA& DrawableRect::color() const
 {
     return _color;
 }
-Rect::Size &Rect::size()
+Size &DrawableRect::size()
 {
     return _size;
 }
 
-RGBA &Rect::color()
+RGBA &DrawableRect::color()
 {
     return _color;
 }

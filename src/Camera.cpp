@@ -6,7 +6,7 @@ Camera::List Camera::get_visible_objects() const
 {
     return List();
 }
-const Camera::Roi &Camera::roi() const
+const Roi &Camera::roi() const
 {
     return _roi;
 }

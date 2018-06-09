@@ -1,7 +1,7 @@
 #ifndef ENGINE_BASICBEHAVIORS_HPP
 #define ENGINE_BASICBEHAVIORS_HPP
 
-#include "core/Drawable.h"
+#include "core/Types.h"
 #include "UniqueIdGenerator.hpp"
 #include "core/Drawable.h"
 #include "helpers/Containers.hpp"
@@ -68,7 +68,6 @@ namespace core::behavior
     class Position: public virtual IBehavior
     {
     public:
-        using Point = helpers::containers::Point2D<int32_t>;
         const Point& position() const;
     protected:
         Point& position();
@@ -85,7 +84,7 @@ namespace core::behavior
         uint32_t z_order() const;
         const Drawable *drawable() const;
         template <class T, class ... Types>
-        T* create_drawable(Types &&... args);
+        T* set_drawable(Types &&... args);
     protected:
         Drawable *drawable();
     private:
@@ -95,7 +94,7 @@ namespace core::behavior
 
     // ===============================================
     template<class T, class... Types>
-    T *Renderable::create_drawable(Types &&... args)
+    T *Renderable::set_drawable(Types &&... args)
     {
         static_assert(std::is_base_of_v<Drawable , T>, "T should be derived from Drawable");
         auto ptr = new T(std::forward<Types>(args)...);

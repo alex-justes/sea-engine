@@ -55,6 +55,7 @@ target_sources(engine PRIVATE
         src/Engine.cpp
         include/helpers/BasicContext.h
         src/BasicContext.cpp
+        include/core/Types.h
         )
 
 add_executable(run "")

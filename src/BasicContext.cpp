@@ -16,7 +16,7 @@ void ObjectManager::remove(Object *object)
     }
 }
 
-Object* ObjectManager::get(helpers::context::Id id)
+Object* ObjectManager::get(Id id)
 {
     auto item = _objects.find(id);
     if (item == _objects.end())
@@ -113,14 +113,56 @@ void BasicContext::initialize()
 {
     subscribe(core::EventType::Mouse);
     subscribe(core::EventType::Keyboard);
-    auto id1 = object_manager().create<GameObject>();
-    auto shape = id1->create_drawable<core::drawable::Rect>();
+
+    auto object = object_manager().create<GameObject>();
+    auto shape = object->set_drawable<core::drawable::DrawableRect>();
+    shape->size() = Size {100, 50};
+
     auto id2 = object_manager().create<GameObject>();
     auto id3 = object_manager().create<Object>();
-    world_manager().add_object(id1);
+    world_manager().add_object(object);
     world_manager().add_object(id2);
     world_manager().add_object(id3);
 //    object_manager().remove(id2);
 //    id2 = object_manager().create<GameObject>();
+}
+
+
+void GameObject::set_collision_size(const Size &size)
+{
+    _changed = true;
+    _collision_size = size;
+}
+
+void GameObject::set_position(const Point &pos)
+{
+    _changed = true;
+    position() = pos;
+}
+
+bool GameObject::update()
+{
+    if (_changed)
+    {
+        collision_shape() = AABB(position(), position() + _collision_size);
+
+        auto single = dynamic_cast<core::drawable::SingleDrawable*>(this);
+        auto compound = dynamic_cast<core::drawable::CompoundDrawable*>(this);
+        if (single != nullptr)
+        {
+            auto rect = dynamic_cast<core::drawable::DrawableRect*>(this);
+            if (rect != nullptr)
+            {
+                render_shape() = AABB(position(), position() + rect->size());
+            }
+        }
+        else if (compound != nullptr)
+        {
+            // TODO: implement
+        }
+        _changed = false;
+        return true;
+    }
+    return false;
 }
 

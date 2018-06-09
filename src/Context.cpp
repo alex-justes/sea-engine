@@ -11,14 +11,14 @@ ScreenManager::ScreenManager(SDL_Renderer *renderer)
 
 }
 
-Screen *ScreenManager::create_screen(const ScreenManager::Roi &roi, uint32_t z_order)
+Screen *ScreenManager::create_screen(const Roi &roi, uint32_t z_order)
 {
     auto screen = new Screen(roi, z_order, _renderer);
     _map.emplace(screen->unique_id(), screen);
     return screen;
 }
 
-void ScreenManager::remove_screen(ScreenManager::Id id)
+void ScreenManager::remove_screen(Id id)
 {
     _map.erase(id);
 }

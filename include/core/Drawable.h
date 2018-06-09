@@ -4,6 +4,7 @@
 #include <memory>
 #include <list>
 #include "helpers/Containers.hpp"
+#include "core/Types.h"
 
 namespace core::drawable
 {
@@ -34,10 +35,9 @@ namespace core::drawable
 
     };
 
-    class Rect: public SingleDrawable
+    class DrawableRect: public SingleDrawable
     {
     public:
-        using Size = helpers::containers::Size2D<uint32_t>;
         const Size& size() const;
         const RGBA& color() const;
         Size& size();

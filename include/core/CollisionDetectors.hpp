@@ -10,8 +10,6 @@
 
 namespace core::collision_detector
 {
-    using AABB = helpers::containers::AABB;
-
     template<class T, template<class> class Behavior = core::behavior::CollisionShape>
     class BroadAABBCollisionDetector
     {
@@ -19,8 +17,6 @@ namespace core::collision_detector
         using value_type = T;
         using behavior_type = Behavior<AABB>;
         using Id = typename T::unique_id_type;
-        using Point2D = helpers::containers::Point2D<uint32_t>;
-        using Rect2D = helpers::containers::Rect2D<uint32_t>;
         using SingleCollisions = std::set<Id>;
         using CollisionPair = std::pair<uint32_t, uint32_t>;
         using PairCollisions = std::set<CollisionPair>;
@@ -31,8 +27,8 @@ namespace core::collision_detector
         virtual void remove(const T &object) = 0;
         virtual void remove(Id id) = 0;
         virtual void update(const T &object) = 0;
-        virtual SingleCollisions broad_check(const Point2D &pt) = 0;
-        virtual SingleCollisions broad_check(const Rect2D &rc) = 0;
+        virtual SingleCollisions broad_check(const Point &pt) = 0;
+        virtual SingleCollisions broad_check(const Rect &rc) = 0;
         virtual PairCollisions broad_check() = 0;
 
         virtual ~BroadAABBCollisionDetector() = default;
@@ -77,8 +73,6 @@ namespace core::collision_detector
         using value_type = typename BroadAABBCollisionDetector<T, Behavior>::value_type;
         using behavior_type = typename BroadAABBCollisionDetector<T, Behavior>::behavior_type;
         using Size = helpers::containers::Size2D<uint32_t>;
-        using Point2D = typename BroadAABBCollisionDetector<T, Behavior>::Point2D;
-        using Rect2D = typename BroadAABBCollisionDetector<T, Behavior>::Rect2D;
         using SingleCollisions = typename BroadAABBCollisionDetector<T, Behavior>::SingleCollisions;
         using CollisionPair = typename BroadAABBCollisionDetector<T, Behavior>::CollisionPair;
         using PairCollisions = typename BroadAABBCollisionDetector<T, Behavior>::PairCollisions;
@@ -88,9 +82,9 @@ namespace core::collision_detector
         void add(const T &object) override;
         void remove(const T &object) override;
         void remove(Id id) override;
-        SingleCollisions broad_check(const Point2D &pt) override;
+        SingleCollisions broad_check(const Point &pt) override;
         void update(const T &object) override;
-        SingleCollisions broad_check(const Rect2D &rc) override;
+        SingleCollisions broad_check(const Rect &rc) override;
         PairCollisions broad_check() override;
 
         void set_world_size(const Size &size);
@@ -102,14 +96,14 @@ namespace core::collision_detector
 
         static uint32_t calc_level(const AABB &shape);
         static uint32_t calc_cell_size(uint32_t level);
-        Rect2D calc_roi(uint32_t level, const AABB &shape) const;
-        static Point2D calc_cell(uint32_t level, const Point2D &pt);
+        Rect calc_roi(uint32_t level, const AABB &shape) const;
+        static Point calc_cell(uint32_t level, const Point &pt);
 
         struct ObjectInfo
         {
             const T *object{nullptr};
             uint32_t level{0};
-            Rect2D roi{0, 0, 0, 0};
+            Rect roi{0, 0, 0, 0};
         };
 
         Size _world_size{0, 0};
@@ -139,21 +133,19 @@ namespace core::collision_detector
     }
 
     template<class T, template<class> class Behavior>
-    typename HierarchicalSpatialGrid<T, Behavior>::Rect2D
-    HierarchicalSpatialGrid<T, Behavior>::calc_roi(uint32_t level, const AABB &shape) const
+    Rect HierarchicalSpatialGrid<T, Behavior>::calc_roi(uint32_t level, const AABB &shape) const
     {
         auto cell_size = calc_cell_size(level);
-        Point2D left_top(shape.top_left.x / cell_size, shape.top_left.y / cell_size);
-        Point2D right_bottom(shape.bottom_right.x / cell_size, shape.bottom_right.y / cell_size);
-        return Rect2D(left_top, right_bottom);
+        Point left_top(shape.top_left.x / cell_size, shape.top_left.y / cell_size);
+        Point right_bottom(shape.bottom_right.x / cell_size, shape.bottom_right.y / cell_size);
+        return Rect(left_top, right_bottom);
     }
 
     template<class T, template<class> class Behavior>
-    typename HierarchicalSpatialGrid<T, Behavior>::Point2D
-    HierarchicalSpatialGrid<T, Behavior>::calc_cell(uint32_t level, const Point2D &pt)
+    Point HierarchicalSpatialGrid<T, Behavior>::calc_cell(uint32_t level, const Point &pt)
     {
         auto cell_size = calc_cell_size(level);
-        return Point2D(pt.x / cell_size, pt.y / cell_size);
+        return Point(pt.x / cell_size, pt.y / cell_size);
     }
 
     template<class T, template<class> class Behavior>
@@ -244,7 +236,7 @@ namespace core::collision_detector
 
     template<class T, template<class> class Behavior>
     typename HierarchicalSpatialGrid<T, Behavior>::SingleCollisions
-    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Point2D &pt)
+    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Point &pt)
     {
         SingleCollisions collisions;
         for (const auto &l: _grid_map)
@@ -267,7 +259,7 @@ namespace core::collision_detector
 
     template<class T, template<class> class Behavior>
     typename HierarchicalSpatialGrid<T, Behavior>::SingleCollisions
-    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Rect2D &rc)
+    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Rect &rc)
     {
         SingleCollisions collisions;
         for (const auto &l: _grid_map)

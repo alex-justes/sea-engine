@@ -2,11 +2,11 @@
 
 using namespace core::behavior;
 
-const Position::Point &Position::position() const
+const Point &Position::position() const
 {
     return _position;
 }
-Position::Point &Position::position()
+Point &Position::position()
 {
     return _position;
 }

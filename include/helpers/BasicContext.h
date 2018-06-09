@@ -1,37 +1,46 @@
 #ifndef ENGINE_BASICCONTEXT_H
 #define ENGINE_BASICCONTEXT_H
 
+#include "core/Types.h"
 #include "core/Context.h"
 #include "core/CollisionDetectors.hpp"
 
 namespace helpers::context
 {
-    using Id = uint32_t;
-    using AABB = helpers::containers::AABB;
-    using Roi = helpers::containers::Rect2D<uint32_t>;
-
     class Object : public core::behavior::UniqueId<Id>
     {
+    public:
+        virtual ~Object() = default;
     };
 
     class CollidableObject :
             public virtual Object,
             public core::behavior::CollisionShape<AABB>
     {
-
+    public:
+        virtual ~CollidableObject() = default;
     };
 
     class RenderableObject :
             public virtual Object,
             public core::behavior::Renderable
     {
-
+    public:
+        virtual ~RenderableObject() = default;
     };
 
     class GameObject :
             public CollidableObject,
             public RenderableObject
     {
+    public:
+        void set_collision_size(const Size &size);
+        void set_position(const Point& pos);
+        bool update();
+        virtual ~GameObject() = default;
+    private:
+        Size _collision_size {0, 0};
+        bool _changed {false};
     };
 
     class ObjectManager

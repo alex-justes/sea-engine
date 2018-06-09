@@ -4,6 +4,7 @@
 #include "helpers/Containers.hpp"
 #include "core/BasicBehaviors.hpp"
 #include "core/Camera.h"
+#include "core/Types.h"
 // TODO: strange behavior (simple #include "SDL.h" do not work)
 #include "SDL2/SDL.h"
 
@@ -16,8 +17,6 @@ namespace core
         friend class ScreenManager;
     public:
         Screen() = delete;
-        using Roi = helpers::containers::Rect2D<uint32_t>;
-        using Point = helpers::containers::Point2D<int32_t>;
         SDL_Texture* render();
         void attach_camera(const Camera* camera);
         void detach_camera();
@@ -25,8 +24,10 @@ namespace core
         int z_order() const;
         virtual ~Screen();
     protected:
+        using PointI32 = helpers::containers::Point2D<int32_t>;
         Screen(const Roi& roi, uint32_t z_order, SDL_Renderer* renderer);
-        void render(const drawable::Drawable* drawable, const Point& position, float scale);
+        // TODO: fix type
+        void render(const drawable::Drawable* drawable, const PointI32& position, float scale);
         void change_z_order(uint32_t z_order);
     private:
         Roi _roi;

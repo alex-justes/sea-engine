@@ -4,7 +4,7 @@
 
 using namespace core;
 
-Screen::Screen(const Screen::Roi &roi, uint32_t z_order, SDL_Renderer *renderer)
+Screen::Screen(const Roi &roi, uint32_t z_order, SDL_Renderer *renderer)
         :
         _roi(roi),
         _renderer(renderer),
@@ -42,7 +42,7 @@ int Screen::z_order() const
     return _z_order;
 }
 
-const Screen::Roi& Screen::roi() const
+const Roi& Screen::roi() const
 {
     return _roi;
 }
@@ -68,20 +68,22 @@ SDL_Texture* Screen::render()
         {
             const auto &object = item.second;
             float scale = std::max(_camera->roi().width() / _roi.width(), _camera->roi().height() / _roi.height());
-            render(object->drawable(), object->position() - _camera->position(), scale);
+            PointI32 obj_pos = {object->position().x, object->position().y};
+            PointI32 cam_pos = {_camera->position().x, _camera->position().y};
+            render(object->drawable(), obj_pos - cam_pos, scale);
         }
         SDL_SetRenderTarget(_renderer, nullptr);
     }
     return _texture;
 }
 
-void Screen::render(const drawable::Drawable *drawable, const Point &position, float scale)
+void Screen::render(const drawable::Drawable *drawable, const PointI32 &position, float scale)
 {
     auto single = dynamic_cast<const drawable::SingleDrawable *>(drawable);
     if (single != nullptr)
     {
         // just draw, based on shape
-        auto rect = dynamic_cast<const drawable::Rect *>(single);
+        auto rect = dynamic_cast<const drawable::DrawableRect *>(single);
         if (rect != nullptr)
         {
             auto w = (int32_t)(scale * rect->size().x);

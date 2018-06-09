@@ -5,6 +5,7 @@
 #include <memory>
 #include <map>
 #include <set>
+#include "core/Types.h"
 #include "core/Events.h"
 #include "core/BasicBehaviors.hpp"
 #include "core/Screen.h"
@@ -20,8 +21,6 @@ namespace core
         friend class Engine;
 
     public:
-        using Roi = typename Screen::Roi;
-        using Id = uint32_t;
         ScreenManager(const ScreenManager &) = delete;
         ScreenManager &operator=(const ScreenManager &) = delete;
         Screen* create_screen(const Roi& roi, uint32_t z_order);
@@ -43,7 +42,6 @@ namespace core
     class EventManager
     {
     public:
-        using Id = uint32_t;
         using Item = std::shared_ptr<const Event>;
         using EventQueue = std::queue<Item>;
         EventManager() = default;
@@ -63,7 +61,6 @@ namespace core
     class ContextManager
     {
     public:
-        using Id = uint32_t;
         ContextManager() = default;
         Context *load_context(const char *obj_file, EventManager &event_manager, ScreenManager &screen_manager);
         void unload_context(Id);
