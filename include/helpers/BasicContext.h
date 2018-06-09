@@ -5,6 +5,7 @@
 #include "core/Context.h"
 #include "core/CollisionDetectors.hpp"
 #include "core/BasicActors.h"
+#include "core/Camera.h"
 
 namespace helpers::context
 {
@@ -75,7 +76,11 @@ namespace helpers::context
         void add_object(Object *object);
         void remove_object(Id id);
         void remove_object(Object *object);
-        void update();
+        void update_objects();
+        void update_cameras();
+        core::Camera* create_camera(const Point& position, const Size& size);
+        void remove_camera(core::Camera* camera);
+        void remove_camera(Id camera);
     private:
         using Item = Object *;
         using Objects = std::map<Id, Item>;
@@ -86,6 +91,7 @@ namespace helpers::context
         Objects _objects;
         CollisionDetector _collision_detector;
         RenderDetector _render_detector;
+        core::CameraManager _camera_manager;
         Size _world_size {0,0};
     };
 

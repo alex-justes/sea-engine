@@ -89,7 +89,7 @@ void WorldManager::remove_object(helpers::context::Object *object)
     remove_object(object->unique_id());
 }
 
-void WorldManager::update()
+void WorldManager::update_objects()
 {
     for (auto &item: _objects)
     {
@@ -117,6 +117,55 @@ void WorldManager::update()
     }
 }
 
+WorldManager &BasicContext::world_manager()
+{
+    return _world_manager;
+}
+
+core::Camera* WorldManager::create_camera(const Point &position, const Size &size)
+{
+    return _camera_manager.create_camera(position, size);
+}
+void WorldManager::remove_camera(Id camera)
+{
+    _camera_manager.remove_camera(camera);
+}
+
+void WorldManager::remove_camera(core::Camera *camera)
+{
+    if (camera == nullptr)
+    {
+        return;
+    }
+    _camera_manager.remove_camera(camera->unique_id());
+}
+
+void WorldManager::update_cameras()
+{
+    for (auto& item: _camera_manager)
+    {
+        auto& camera = item.second;
+        if (camera->active())
+        {
+            // Weirdo... %|
+            Point cam_pos = ((const core::Camera*)(camera.get()))->position();
+            Point cam_size = ((const core::Camera*)(camera.get()))->size();
+            Roi roi {cam_pos, cam_pos + cam_size};
+            auto collisions = _render_detector.broad_check(roi);
+            typename core::Camera::List list;
+            for (const auto& id: collisions)
+            {
+                auto renderable = dynamic_cast<typename core::Camera::ObjectType>(_objects[id]);
+                if (renderable != nullptr)
+                {
+                    list.push_back(renderable);
+                }
+            }
+            camera->update_visible_objects(std::move(list));
+        }
+    }
+}
+
 BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager)
         :
         Context(event_manager, screen_manager)
@@ -129,10 +178,6 @@ ObjectManager &BasicContext::object_manager()
     return _object_manager;
 }
 
-WorldManager &BasicContext::world_manager()
-{
-    return _world_manager;
-}
 
 void BasicContext::evaluate(uint32_t time_elapsed)
 {
@@ -146,7 +191,7 @@ void BasicContext::evaluate(uint32_t time_elapsed)
     // TODO: check for collisions
 
     // Act and update collision detectors
-    world_manager().update();
+    world_manager().update_objects();
 
     // Evaluate all available contexts
     for (auto &item: _context_manager)
@@ -158,7 +203,7 @@ void BasicContext::evaluate(uint32_t time_elapsed)
         }
     }
 
-    // TODO: update cameras
+    world_manager().update_cameras();
 }
 
 void BasicContext::process_event(const core::Event *event)
@@ -171,12 +216,12 @@ void BasicContext::initialize()
     subscribe(core::EventType::Mouse);
     subscribe(core::EventType::Keyboard);
 
-    world_manager().set_world_size(Size(100,100));
+    world_manager().set_world_size(Size(640, 480));
 
     auto object = object_manager().create<GameObject>();
     auto shape = object->set_drawable<core::drawable::DrawableRect>();
     shape->size() = Size{100, 50};
-    shape->color() = core::drawable::RGBA {0, 255, 0, 255};
+    shape->color() = core::drawable::RGBA {0, 255, 0, 0};
 
     auto id2 = object_manager().create<GameObject>();
     auto id3 = object_manager().create<Object>();
@@ -185,7 +230,10 @@ void BasicContext::initialize()
     world_manager().add_object(id3);
 //    object_manager().remove(id2);
 //    id2 = object_manager().create<GameObject>();
-    world_manager().update();
+    world_manager().update_objects();
+    auto camera = world_manager().create_camera(Point(10,20), Size(200, 200));
+    auto screen = screen_manager().create_screen(Roi(0, 0, 640, 480), 0);
+    screen_manager().attach_camera(camera, screen);
 }
 
 
@@ -277,3 +325,4 @@ ContextManager::const_iterator ContextManager::cend() const
 {
     return _map.cend();
 }
+

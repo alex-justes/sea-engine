@@ -27,13 +27,15 @@ Screen::~Screen()
     }
 }
 
-void Screen::attach_camera(const Camera *camera)
+void Screen::attach_camera(Camera *camera)
 {
+    LOG_D("Camera %d attached to Screen %d", camera->unique_id(), unique_id())
     _camera = camera;
 }
 
 void Screen::detach_camera()
 {
+    LOG_D("Camera %d detached to Screen %d", _camera->unique_id(), unique_id())
     _camera = nullptr;
 }
 
@@ -56,20 +58,21 @@ SDL_Texture* Screen::render()
 {
     if (_camera != nullptr && _texture != nullptr)
     {
+        auto camera = const_cast<const Camera *>(_camera);
         SDL_SetRenderTarget(_renderer, _texture);
         SDL_SetRenderDrawColor(_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderClear(_renderer);
         auto map = std::multimap<uint32_t, const behavior::Renderable *>();
-        for (const auto &object: _camera->get_visible_objects())
+        for (const auto &object: camera->get_visible_objects())
         {
             map.emplace(object->z_order(), object);
         }
         for (const auto &item: map)
         {
             const auto &object = item.second;
-            float scale = std::max(_camera->roi().width() / _roi.width(), _camera->roi().height() / _roi.height());
+            float scale = std::max(camera->size().x / _roi.width(), camera->size().y / _roi.height());
             PointI32 obj_pos = {object->position().x, object->position().y};
-            PointI32 cam_pos = {_camera->position().x, _camera->position().y};
+            PointI32 cam_pos = {camera->position().x, camera->position().y};
             render(object->drawable(), obj_pos - cam_pos, scale);
         }
         SDL_SetRenderTarget(_renderer, nullptr);
@@ -104,4 +107,9 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
             render(item, position, scale);
         }
     }
+}
+
+bool Screen::camera_attached()
+{
+    return _camera != nullptr;
 }

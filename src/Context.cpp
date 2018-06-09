@@ -12,34 +12,61 @@ ScreenManager::ScreenManager(SDL_Renderer *renderer)
 
 }
 
-Screen *ScreenManager::create_screen(const Roi &roi, uint32_t z_order)
+Id ScreenManager::create_screen(const Roi &roi, uint32_t z_order)
 {
     auto screen = new Screen(roi, z_order, _renderer);
-    _map.emplace(screen->unique_id(), screen);
-    return screen;
+    _screens.emplace(screen->unique_id(), screen);
+    return screen->unique_id();
 }
 
 void ScreenManager::remove_screen(Id id)
 {
-    _map.erase(id);
+    _screens.erase(id);
+}
+
+bool ScreenManager::attach_camera(core::Camera *camera, Id screen)
+{
+    if (camera == nullptr || _screens.count(screen) == 0)
+    {
+        return false;
+    }
+    if (_screens[screen]->camera_attached())
+    {
+        _screens[screen]->_camera->_screens_attached--;
+        _screens[screen]->_camera = nullptr;
+    }
+    _screens[screen]->attach_camera(camera);
+    camera->_screens_attached++;
+    return true;
+}
+
+bool ScreenManager::detach_camera(core::Camera *camera, Id screen)
+{
+    if (camera == nullptr || _screens.count(screen) == 0)
+    {
+        return false;
+    }
+    _screens[screen]->detach_camera();
+    camera->_screens_attached--;
+    return true;
 }
 
 ScreenManager::const_iterator ScreenManager::cbegin() const
 {
-    return _map.cbegin();
+    return _screens.cbegin();
 }
 ScreenManager::const_iterator ScreenManager::cend() const
 {
-    return _map.cend();
+    return _screens.cend();
 }
 
 ScreenManager::iterator ScreenManager::begin()
 {
-    return _map.begin();
+    return _screens.begin();
 }
 ScreenManager::iterator ScreenManager::end()
 {
-    return _map.end();
+    return _screens.end();
 }
 
 Context *ContextLoader::load_context(const char *obj_file, EventManager &event_manager, ScreenManager &screen_manager)
@@ -152,6 +179,11 @@ Context::Context(EventManager &event_manager, ScreenManager &screen_manager)
 Context::~Context()
 {
     unsubscribe_impl();
+}
+
+ScreenManager& Context::screen_manager()
+{
+    return _screen_manager;
 }
 
 void Context::subscribe(EventType t)

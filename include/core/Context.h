@@ -23,8 +23,10 @@ namespace core
     public:
         ScreenManager(const ScreenManager &) = delete;
         ScreenManager &operator=(const ScreenManager &) = delete;
-        Screen* create_screen(const Roi& roi, uint32_t z_order);
+        Id create_screen(const Roi& roi, uint32_t z_order);
         void remove_screen(Id id);
+        bool attach_camera(Camera* camera, Id screen);
+        bool detach_camera(Camera* camera, Id screen);
     private:
         using Map = std::map<Id, std::unique_ptr<Screen>>;
         using const_iterator =  typename Map::const_iterator;
@@ -36,7 +38,7 @@ namespace core
         iterator begin();
         iterator end();
         SDL_Renderer* _renderer;
-        Map _map;
+        Map _screens;
     };
 
     class EventManager
@@ -74,7 +76,7 @@ namespace core
         std::map<Id, ContextInfo> _contexts;
     };
 
-    class Context : public behavior::UniqueId<uint32_t>
+    class Context : public behavior::UniqueId<Id>
     {
         friend class EventManager;
 
@@ -94,6 +96,7 @@ namespace core
         virtual void unsubscribe(EventType t) final;
         virtual bool events_pop(Item& event) final;
         void set_finished(bool status);
+        ScreenManager& screen_manager();
     private:
         using EventQueue = typename EventManager::EventQueue;
         void enqueue(Item event);
