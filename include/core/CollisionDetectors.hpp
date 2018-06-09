@@ -81,7 +81,7 @@ namespace core::collision_detector
         using CollisionPair = typename BroadAABBCollisionDetector<T, Behavior>::CollisionPair;
         using PairCollisions = typename BroadAABBCollisionDetector<T, Behavior>::PairCollisions;
 
-        explicit HierarchicalSpatialGrid(const Size &world_size);
+        HierarchicalSpatialGrid() = default;
 
         void add(const T &object) override;
         void remove(const T &object) override;
@@ -89,6 +89,8 @@ namespace core::collision_detector
         void update(const T &object) override;
         SingleCollisions broad_check(const Rect2D &rc) override;
         PairCollisions broad_check() override;
+
+        void set_world_size(const Size& size);
 
     private:
         using Id = typename T::unique_id_type;
@@ -104,23 +106,21 @@ namespace core::collision_detector
         struct ObjectInfo
         {
             const T *object{nullptr};
-            uint32_t level;
-            Rect2D roi;
+            uint32_t level{0};
+            Rect2D roi{0,0,0,0};
         };
 
-        Size _world_size;
+        Size _world_size {0, 0};
         GridMap _grid_map;
         std::map <Id, ObjectInfo> _objects;
         std::map <uint32_t, uint32_t> _objects_per_level;
-        bool _update{false};
     };
 
-    template<class T, template<class> class Behavior>
-    HierarchicalSpatialGrid<T, Behavior>::HierarchicalSpatialGrid(const Size &world_size)
-            :
-            _world_size(world_size)
-    {
 
+    template<class T, template<class> class Behavior>
+    void HierarchicalSpatialGrid<T, Behavior>::set_world_size(const Size &size)
+    {
+        _world_size = size;
     }
 
     template<class T, template<class> class Behavior>

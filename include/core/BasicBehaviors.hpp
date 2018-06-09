@@ -3,6 +3,7 @@
 
 #include "core/Drawable.h"
 #include "UniqueIdGenerator.hpp"
+#include "core/Drawable.h"
 #include "helpers/Containers.hpp"
 
 namespace core::behavior
@@ -77,11 +78,11 @@ namespace core::behavior
 
     class Renderable:
             public RenderShape<helpers::containers::AABB>,
+            public core::drawable::Drawable,
             public virtual Position
     {
     public:
         uint32_t z_order() const;
-        virtual const core::drawable::Drawable* drawable() const = 0;
     protected:
     private:
         uint32_t _z_order {0};

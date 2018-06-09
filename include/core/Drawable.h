@@ -20,6 +20,7 @@ namespace core::drawable
     public:
         Drawable() = default;
         virtual ~Drawable() = default;
+        const Drawable* get_drawable() const;
     };
 
     class DrawableShape

@@ -2,6 +2,10 @@
 
 using namespace core::drawable;
 
+const Drawable* Drawable::get_drawable() const
+{
+    return this;
+}
 
 
 std::list<const Drawable *> CompoundDrawable::get_drawables() const

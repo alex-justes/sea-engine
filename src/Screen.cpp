@@ -68,7 +68,7 @@ SDL_Texture* Screen::render()
         {
             const auto &object = item.second;
             float scale = std::max(_camera->roi().width() / _roi.width(), _camera->roi().height() / _roi.height());
-            render(object->drawable(), object->position() - _camera->position(), scale);
+            render(object->get_drawable(), object->position() - _camera->position(), scale);
         }
         SDL_SetRenderTarget(_renderer, nullptr);
     }
