@@ -81,7 +81,7 @@ namespace core
     public:
         Context() = delete;
         Context(EventManager &event_manager, ScreenManager &screen_manager);
-        virtual void evaluate() = 0;
+        virtual void evaluate(uint32_t time_elapsed) = 0;
         virtual void initialize() = 0;
         virtual void pause();
         virtual void unpause();

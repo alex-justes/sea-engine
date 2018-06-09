@@ -110,6 +110,8 @@ void Engine::main_loop()
 
     using namespace std::chrono;
     auto desired_frame_duration = milliseconds(1000/_config.application.fps);
+    auto previous_timestamp = steady_clock::now();
+    auto current_timestamp = steady_clock::now();
 
     SDL_Event sdl_event;
     while (_running && !context->finished())
@@ -143,7 +145,10 @@ void Engine::main_loop()
                 event_manager.push(event);
             }
         }
-        context->evaluate();
+        current_timestamp = steady_clock::now();
+        auto time_elapsed = duration_cast<milliseconds>(current_timestamp - previous_timestamp);
+        previous_timestamp = current_timestamp;
+        context->evaluate((uint32_t)(time_elapsed.count()));
         std::multimap<uint32_t, Screen*> screens;
         for (auto& item: screen_manager)
         {
@@ -164,8 +169,7 @@ void Engine::main_loop()
         auto delta = duration_cast<milliseconds>(desired_frame_duration - frame_duration);
         if (delta.count() > 0)
         {
-            // NOTE: might look weird... But int64 and overflow...
-            SDL_Delay((uint32_t)((int)(delta.count())));
+            SDL_Delay((uint32_t)(delta.count()));
         }
     }
     context_manager.unload_context(context->unique_id());

@@ -134,7 +134,7 @@ WorldManager &BasicContext::world_manager()
     return _world_manager;
 }
 
-void BasicContext::evaluate()
+void BasicContext::evaluate(uint32_t time_elapsed)
 {
     Item event;
     // Process events
@@ -142,7 +142,6 @@ void BasicContext::evaluate()
     {
         process_event(event.get());
     }
-    LOG_D("tick...")
 
     // TODO: check for collisions
 
@@ -155,7 +154,7 @@ void BasicContext::evaluate()
         auto &context = item.second;
         if (!context->paused())
         {
-            context->evaluate();
+            context->evaluate(time_elapsed);
         }
     }
 
@@ -177,6 +176,7 @@ void BasicContext::initialize()
     auto object = object_manager().create<GameObject>();
     auto shape = object->set_drawable<core::drawable::DrawableRect>();
     shape->size() = Size{100, 50};
+    shape->color() = core::drawable::RGBA {0, 255, 0, 255};
 
     auto id2 = object_manager().create<GameObject>();
     auto id3 = object_manager().create<Object>();

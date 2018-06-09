@@ -118,7 +118,7 @@ namespace helpers::context
     public:
         BasicContext() = delete;
         BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager);
-        virtual void evaluate() override;
+        virtual void evaluate(uint32_t time_elapsed) override;
         virtual void initialize() override;
         virtual void process_event(const core::Event *event);
     protected:
