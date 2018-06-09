@@ -37,15 +37,16 @@ ObjectManager::const_iterator ObjectManager::cend() const
 }
 
 WorldManager::WorldManager(core::ScreenManager &screen_manager)
-:_screen_manager(screen_manager)
+        :
+        _screen_manager(screen_manager)
 {
 }
 
 WorldManager::~WorldManager()
 {
-    for (auto& item: _camera_manager)
+    for (auto &item: _camera_manager)
     {
-        core::Camera* camera = item.second.get();
+        core::Camera *camera = item.second.get();
         _screen_manager.detach_camera(camera);
     }
 }
@@ -138,7 +139,15 @@ WorldManager &BasicContext::world_manager()
 
 core::Camera *WorldManager::create_camera(const Point &position, const Size &size)
 {
-    return _camera_manager.create_camera(position, size);
+    Size fixed_size{
+            std::min(size.x, _world_size.x),
+            std::min(size.y, _world_size.y)
+    };
+    Point fixed_position{
+            std::min(position.x, _world_size.x),
+            std::min(position.y, _world_size.y)
+    };
+    return _camera_manager.create_camera(fixed_position, fixed_size);
 }
 void WorldManager::remove_camera(Id id)
 {
@@ -166,7 +175,13 @@ void WorldManager::update_cameras()
             // Weirdo... %|
             Point cam_pos = ((const core::Camera *) (camera.get()))->position();
             Point cam_size = ((const core::Camera *) (camera.get()))->size();
-            Roi roi{cam_pos, cam_pos + cam_size};
+            Point bottom_right = cam_pos + cam_size;
+            Roi roi{cam_pos,
+                    Point{
+                            std::min(bottom_right.x, _world_size.x),
+                            std::min(bottom_right.y, _world_size.y)
+                    }
+            };
             auto collisions = _render_detector.broad_check(roi);
             typename core::Camera::List list;
             for (const auto &id: collisions)
@@ -219,7 +234,7 @@ void BasicContext::evaluate(uint32_t time_elapsed)
             context->evaluate(time_elapsed);
         }
     }
-
+    // Update cameras
     world_manager().update_cameras();
 }
 
