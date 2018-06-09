@@ -1,11 +1,7 @@
 #include <iostream>
 #include <filesystem>
-
-#include "core/Engine.h"
-
-#include "core/BasicBehaviors.hpp"
-#include "core/CollisionDetectors.hpp"
 #include "Log.h"
+#include "core/Engine.h"
 #include "helpers/Configuration.h"
 
 int main(int argc, char **argv)
