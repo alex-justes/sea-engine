@@ -137,6 +137,11 @@ WorldManager &BasicContext::world_manager()
     return _world_manager;
 }
 
+WorldManager::Collisions WorldManager::check_collisions()
+{
+    return _collision_detector.broad_check();
+}
+
 core::Camera *WorldManager::create_camera(const Point &position, const Size &size)
 {
     Size fixed_size{
@@ -225,7 +230,9 @@ void BasicContext::evaluate(uint32_t time_elapsed)
         process_event(event.get());
     }
 
-    // TODO: check for collisions
+    // TODO: check copy elision
+    // Check collisions
+    process_collisions(world_manager().check_collisions());
 
     // Act and update collision detectors
     world_manager().update_objects();
@@ -236,11 +243,20 @@ void BasicContext::evaluate(uint32_t time_elapsed)
         auto &context = item.second;
         if (!context->paused())
         {
+            if (context->finished())
+            {
+                set_finished(true);
+                break;
+            }
             context->evaluate(time_elapsed);
         }
     }
     // Update cameras
     world_manager().update_cameras();
+}
+
+void BasicContext::process_collisions(BasicContext::Collisions pairs)
+{
 }
 
 void BasicContext::process_event(const core::Event *event)

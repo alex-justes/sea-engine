@@ -70,10 +70,17 @@ namespace helpers::context
 
     class WorldManager
     {
+    private:
+        using Item = Object *;
+        using Objects = std::map<Id, Item>;
+        template<class T, template<class> class Behavior>
+        using BroadCollisionDetector = typename core::collision_detector::HierarchicalSpatialGrid<T, Behavior>;
+        using CollisionDetector = BroadCollisionDetector<CollidableObject, core::behavior::CollisionShape>;
+        using RenderDetector = BroadCollisionDetector<RenderableObject, core::behavior::RenderShape>;
     public:
+        using Collisions = CollisionDetector::PairCollisions;
         explicit WorldManager(core::ScreenManager& screen_manager);
         virtual ~WorldManager();
-        void set_screen_manager(core::ScreenManager* manager);
         void set_world_size(const Size& size);
         void add_object(Object *object);
         void remove_object(Id id);
@@ -83,13 +90,8 @@ namespace helpers::context
         core::Camera* create_camera(const Point& position, const Size& size);
         void remove_camera(core::Camera* camera);
         void remove_camera(Id id);
+        Collisions check_collisions();
     private:
-        using Item = Object *;
-        using Objects = std::map<Id, Item>;
-        template<class T, template<class> class Behavior>
-        using BroadCollisionDetector = typename core::collision_detector::HierarchicalSpatialGrid<T, Behavior>;
-        using CollisionDetector = BroadCollisionDetector<CollidableObject, core::behavior::CollisionShape>;
-        using RenderDetector = BroadCollisionDetector<RenderableObject, core::behavior::RenderShape>;
         Objects _objects;
         CollisionDetector _collision_detector;
         RenderDetector _render_detector;
@@ -125,11 +127,13 @@ namespace helpers::context
     class BasicContext : public core::Context
     {
     public:
+        using Collisions = WorldManager::Collisions;
         BasicContext() = delete;
         BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager);
         virtual void evaluate(uint32_t time_elapsed) override;
         virtual void initialize() override;
         virtual void process_event(const core::Event *event);
+        virtual void process_collisions(Collisions pairs);
     protected:
         ObjectManager &object_manager();
         WorldManager &world_manager();
