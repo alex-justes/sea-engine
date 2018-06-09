@@ -4,6 +4,7 @@
 #include "core/Types.h"
 #include "core/Context.h"
 #include "core/CollisionDetectors.hpp"
+#include "core/BasicActors.h"
 
 namespace helpers::context
 {
@@ -31,16 +32,19 @@ namespace helpers::context
 
     class GameObject :
             public CollidableObject,
-            public RenderableObject
+            public RenderableObject,
+            public core::behavior::Updatable,
+            public core::actor::Actor
     {
     public:
         void set_collision_size(const Size &size);
         void set_position(const Point& pos);
-        bool update();
+        virtual bool update() override;
+        virtual bool act() override;
         virtual ~GameObject() = default;
     private:
         Size _collision_size {0, 0};
-        bool _changed {false};
+        bool _changed {true};
     };
 
     class ObjectManager
@@ -70,6 +74,7 @@ namespace helpers::context
         void add_object(Object *object);
         void remove_object(Id id);
         void remove_object(Object *object);
+        void update();
     private:
         using Item = Object *;
         using Objects = std::map<Id, Item>;
@@ -82,6 +87,14 @@ namespace helpers::context
         RenderDetector _render_detector;
     };
 
+    class ContextManager
+    {
+    public:
+        virtual ~ContextManager() = default;
+    private:
+        core::ContextLoader _context_loader;
+    };
+
     class BasicContext : public core::Context
     {
     public:
@@ -89,6 +102,7 @@ namespace helpers::context
         BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager);
         virtual void evaluate() override;
         virtual void initialize() override;
+        virtual void process_event(const core::Event* event);
     protected:
         ObjectManager &object_manager();
         WorldManager &world_manager();

@@ -27,6 +27,7 @@ namespace core::collision_detector
         virtual void remove(const T &object) = 0;
         virtual void remove(Id id) = 0;
         virtual void update(const T &object) = 0;
+        virtual void update(Id id) = 0;
         virtual SingleCollisions broad_check(const Point &pt) = 0;
         virtual SingleCollisions broad_check(const Rect &rc) = 0;
         virtual PairCollisions broad_check() = 0;
@@ -84,6 +85,7 @@ namespace core::collision_detector
         void remove(Id id) override;
         SingleCollisions broad_check(const Point &pt) override;
         void update(const T &object) override;
+        void update(Id id) override;
         SingleCollisions broad_check(const Rect &rc) override;
         PairCollisions broad_check() override;
 
@@ -221,19 +223,25 @@ namespace core::collision_detector
     void HierarchicalSpatialGrid<T, Behavior>::update(const T &object)
     {
         auto id = object.unique_id();
+        update(id);
+    }
+
+    template<class T, template<class> class Behavior>
+    void HierarchicalSpatialGrid<T, Behavior>::update(Id id)
+    {
         if (_objects.count(id) == 0)
         {
             return;
         }
+        const auto& object = *(_objects[id].object);
         auto level = calc_level(this->get_shape(object));
         auto roi = calc_roi(level, this->get_shape(object));
         if (level != _objects[id].level || roi != _objects[id].roi)
         {
-            remove(object);
+            remove(id);
             add(object);
         }
     }
-
     template<class T, template<class> class Behavior>
     typename HierarchicalSpatialGrid<T, Behavior>::SingleCollisions
     HierarchicalSpatialGrid<T, Behavior>::broad_check(const Point &pt)

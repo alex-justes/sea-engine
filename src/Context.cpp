@@ -6,7 +6,8 @@
 using namespace core;
 
 ScreenManager::ScreenManager(SDL_Renderer *renderer)
-: _renderer(renderer)
+        :
+        _renderer(renderer)
 {
 
 }
@@ -41,48 +42,48 @@ ScreenManager::iterator ScreenManager::end()
     return _map.end();
 }
 
-Context *ContextManager::load_context(const char* obj_file, EventManager &event_manager, ScreenManager &screen_manager)
+Context *ContextLoader::load_context(const char *obj_file, EventManager &event_manager, ScreenManager &screen_manager)
 {
     LOG_S("Loading context from %s", obj_file)
-    void* handle = SDL_LoadObject(obj_file);
+    void *handle = SDL_LoadObject(obj_file);
     if (handle == nullptr)
     {
         LOG_E("Unable to load context %s", SDL_GetError())
         return nullptr;
     }
-    auto func = (ContextFunction)SDL_LoadFunction(handle, "create_context");
+    auto func = (ContextFunction) SDL_LoadFunction(handle, "create_context");
     if (func == nullptr)
     {
         LOG_E("Unable to load context %s", SDL_GetError())
         return nullptr;
     }
     LOG_S("Done.")
-    auto context = static_cast<Context*>(func(event_manager, screen_manager));
+    auto context = static_cast<Context *>(func(event_manager, screen_manager));
     auto id = context->unique_id();
-    ContextInfo info {handle, context};
+    ContextInfo info{handle, context};
     _contexts.insert(std::make_pair(id, info));
     return context;
 }
 
-void ContextManager::unload_context(Id id)
+void ContextLoader::unload_context(Id id)
 {
     auto it = _contexts.find(id);
     if (it == _contexts.end())
     {
         return;
     }
-    auto& info = it->second;
+    auto &info = it->second;
     LOG_D("Unloading context %d", it->first)
     delete info.context;
     SDL_UnloadObject(info.handle);
     _contexts.erase(it);
 }
 
-ContextManager::~ContextManager()
+ContextLoader::~ContextLoader()
 {
-    for (auto& item: _contexts)
+    for (auto &item: _contexts)
     {
-        auto& [id, info] = item;
+        auto&[id, info] = item;
         LOG_D("Unloading context %d", id)
         delete info.context;
         SDL_UnloadObject(info.handle);
@@ -90,7 +91,7 @@ ContextManager::~ContextManager()
     _contexts.clear();
 }
 
-void EventManager::subscribe(Context* context, EventType t)
+void EventManager::subscribe(Context *context, EventType t)
 {
     if (_map.count(t) == 0)
     {
@@ -100,7 +101,7 @@ void EventManager::subscribe(Context* context, EventType t)
     _map[t][id] = context;
 }
 
-void EventManager::unsubscribe(Context* context, EventType t)
+void EventManager::unsubscribe(Context *context, EventType t)
 {
     if (_map.count(t) == 0)
     {
@@ -114,14 +115,14 @@ void EventManager::unsubscribe(Context* context, EventType t)
     }
 }
 
-void EventManager::unsubscribe(Context* context)
+void EventManager::unsubscribe(Context *context)
 {
     std::list<EventType> available_events;
-    for (const auto& item: _map)
+    for (const auto &item: _map)
     {
         available_events.push_back(item.first);
     }
-    for (const auto& event: available_events)
+    for (const auto &event: available_events)
     {
         unsubscribe(context, event);
     }
@@ -133,16 +134,17 @@ void EventManager::push(Item event)
     {
         return;
     }
-    for (auto& item: _map[event->type()])
+    for (auto &item: _map[event->type()])
     {
         auto&[id, context] = item;
         context->enqueue(event);
     }
 }
 
-Context::Context(EventManager& event_manager, ScreenManager& screen_manager)
-: _external_event_manager(event_manager),
-  _screen_manager(screen_manager)
+Context::Context(EventManager &event_manager, ScreenManager &screen_manager)
+        :
+        _external_event_manager(event_manager),
+        _screen_manager(screen_manager)
 {
 
 }
@@ -181,7 +183,7 @@ void Context::unsubscribe_impl()
 {
     _external_event_manager.unsubscribe(this);
 }
-bool Context::events_pop(Item& event)
+bool Context::events_pop(Item &event)
 {
     event.reset();
     if (!_event_queue.empty())

@@ -52,6 +52,7 @@ target_sources(engine PRIVATE
         include/helpers/Storage.hpp
         include/helpers/Containers.hpp
         include/core/Engine.h
+        include/core/BasicActors.h
         src/Engine.cpp
         include/helpers/BasicContext.h
         src/BasicContext.cpp

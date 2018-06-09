@@ -58,13 +58,13 @@ namespace core
 
     typedef void *(*ContextFunction)(EventManager &, ScreenManager &);
 
-    class ContextManager
+    class ContextLoader
     {
     public:
-        ContextManager() = default;
+        ContextLoader() = default;
         Context *load_context(const char *obj_file, EventManager &event_manager, ScreenManager &screen_manager);
         void unload_context(Id);
-        virtual ~ContextManager();
+        virtual ~ContextLoader();
     private:
         struct ContextInfo
         {
@@ -97,8 +97,6 @@ namespace core
         void unsubscribe_impl();
         EventManager &_external_event_manager;
         ScreenManager &_screen_manager;
-        ContextManager _context_manager;
-        EventManager _event_manager;
         EventQueue _event_queue;
     };
 }

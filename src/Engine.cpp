@@ -74,7 +74,7 @@ void Engine::main_loop()
 {
     _running = true;
     EventManager event_manager;
-    ContextManager context_manager;
+    ContextLoader context_manager;
 
     if (!create_window())
     {

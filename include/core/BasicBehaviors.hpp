@@ -92,6 +92,12 @@ namespace core::behavior
         std::unique_ptr<Drawable> _drawable;
     };
 
+    class Updatable: public virtual IBehavior
+    {
+    public:
+        virtual bool update() = 0;
+    };
+
     // ===============================================
     template<class T, class... Types>
     T *Renderable::set_drawable(Types &&... args)

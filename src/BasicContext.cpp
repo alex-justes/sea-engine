@@ -83,6 +83,34 @@ void WorldManager::remove_object(helpers::context::Object *object)
     remove_object(object->unique_id());
 }
 
+void WorldManager::update()
+{
+    for (auto& item: _objects)
+    {
+        auto& object = item.second;
+        bool changed_in_action = false;
+        auto actor = dynamic_cast<core::actor::Actor*>(object);
+        if (actor != nullptr)
+        {
+            LOG_D("Act: %d", object->unique_id())
+            changed_in_action = actor->act();
+        }
+        bool updated = false;
+        auto updatable = dynamic_cast<core::behavior::Updatable*>(object);
+        if (updatable != nullptr)
+        {
+            LOG_D("Update: %d", object->unique_id())
+            updated = updatable->update();
+        }
+        if (changed_in_action || updated)
+        {
+            LOG_D("Update collision detetors for %d", object->unique_id())
+            _collision_detector.update(object->unique_id());
+            _render_detector.update(object->unique_id());
+        }
+    }
+}
+
 BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager)
         :
         Context(event_manager, screen_manager)
@@ -103,10 +131,22 @@ WorldManager& BasicContext::world_manager()
 void BasicContext::evaluate()
 {
     Item event;
+    // Process events
     while (events_pop(event))
     {
-        LOG_S("Event!")
+        process_event(event.get());
     }
+
+    // TODO: check for collisions
+
+    // Act and update collision detectors
+    world_manager().update();
+
+    // Evaluate all available contexts
+}
+
+void BasicContext::process_event(const core::Event *event)
+{
 }
 
 void BasicContext::initialize()
@@ -125,6 +165,7 @@ void BasicContext::initialize()
     world_manager().add_object(id3);
 //    object_manager().remove(id2);
 //    id2 = object_manager().create<GameObject>();
+    world_manager().update();
 }
 
 
@@ -145,7 +186,6 @@ bool GameObject::update()
     if (_changed)
     {
         collision_shape() = AABB(position(), position() + _collision_size);
-
         auto single = dynamic_cast<core::drawable::SingleDrawable*>(this);
         auto compound = dynamic_cast<core::drawable::CompoundDrawable*>(this);
         if (single != nullptr)
@@ -163,6 +203,11 @@ bool GameObject::update()
         _changed = false;
         return true;
     }
+    return false;
+}
+
+bool GameObject::act()
+{
     return false;
 }
 
