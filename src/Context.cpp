@@ -71,6 +71,16 @@ bool ScreenManager::detach_camera(core::Camera *camera)
     return detached;
 }
 
+const Size& ScreenManager::screen_size() const
+{
+    return _screen_size;
+}
+
+void ScreenManager::set_screen_size(const Size &size)
+{
+    _screen_size = size;
+}
+
 ScreenManager::const_iterator ScreenManager::cbegin() const
 {
     return _screens.cbegin();

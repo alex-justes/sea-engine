@@ -28,18 +28,21 @@ namespace core
         bool attach_camera(Camera* camera, Id screen);
         bool detach_camera(Camera* camera, Id screen);
         bool detach_camera(Camera* camera);
+        const Size& screen_size() const;
     private:
         using Map = std::map<Id, std::unique_ptr<Screen>>;
         using const_iterator =  typename Map::const_iterator;
         using iterator = typename Map::iterator;
 
         explicit ScreenManager(SDL_Renderer* renderer);
+        void set_screen_size(const Size& size);
         const_iterator cbegin() const;
         const_iterator cend() const;
         iterator begin();
         iterator end();
         SDL_Renderer* _renderer;
         Map _screens;
+        Size _screen_size;
     };
 
     class EventManager

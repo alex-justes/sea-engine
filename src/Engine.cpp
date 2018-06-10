@@ -95,6 +95,10 @@ void Engine::main_loop()
 
     ScreenManager screen_manager(_renderer);
 
+    int window_w, window_h;
+    SDL_GetWindowSize(_window, &window_w, &window_h);
+    screen_manager.set_screen_size(Size {window_w, window_h});
+
     Context *context = context_manager.load_context(_config.application.entry_point.c_str(),
                                                     event_manager,
                                                     screen_manager);
