@@ -26,7 +26,7 @@ namespace core
         void detach_camera();
         bool camera_attached();
         using PointI32 = helpers::containers::Point2D<int32_t>;
-        Screen(const Roi& roi, uint32_t z_order, SDL_Renderer* renderer);
+        Screen(const Roi& roi, uint32_t z_order, SDL_Renderer* renderer, const RGBA& base_color);
         void render(const drawable::Drawable* drawable, const PointI32& position);
         void change_z_order(uint32_t z_order);
     private:
@@ -35,6 +35,7 @@ namespace core
         SDL_Renderer* _renderer {nullptr};
         Camera* _camera {nullptr};
         uint32_t _z_order {0};
+        RGBA _base_color{0,0,0,0};
     };
 }
 

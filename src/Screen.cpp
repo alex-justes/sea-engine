@@ -4,11 +4,12 @@
 
 using namespace core;
 
-Screen::Screen(const Roi &roi, uint32_t z_order, SDL_Renderer *renderer)
+Screen::Screen(const Roi &roi, uint32_t z_order, SDL_Renderer *renderer, const RGBA& base_color)
         :
         _roi(roi),
         _renderer(renderer),
-        _z_order(z_order)
+        _z_order(z_order),
+        _base_color(base_color)
 {
     _texture = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, roi.width(),
                                  roi.height());
@@ -60,7 +61,7 @@ SDL_Texture* Screen::render()
     {
         auto camera = const_cast<const Camera *>(_camera);
         SDL_SetRenderTarget(_renderer, _texture);
-        SDL_SetRenderDrawColor(_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        SDL_SetRenderDrawColor(_renderer, _base_color.r, _base_color.g, _base_color.b, _base_color.a);
         SDL_RenderClear(_renderer);
         auto map = std::multimap<uint32_t, const behavior::Renderable *>();
         for (const auto &object: camera->get_visible_objects())

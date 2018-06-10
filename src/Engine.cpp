@@ -95,6 +95,8 @@ void Engine::main_loop()
 
     ScreenManager screen_manager(_renderer);
 
+    SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+
     int window_w, window_h;
     SDL_GetWindowSize(_window, &window_w, &window_h);
     screen_manager.set_screen_size(Size {window_w, window_h});
