@@ -107,9 +107,13 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
         if (rect != nullptr)
         {
             SDL_Rect fill_rect = {position.x, position.y, (int32_t)rect->size().x, (int32_t)rect->size().y};
-            const auto& color = rect->color();
-            SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, color.a);
+            const auto& fill_color = rect->fill_color();
+            SDL_SetRenderDrawColor(_renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
             SDL_RenderFillRect(_renderer, &fill_rect);
+            const auto& border_color = rect->border_color();
+
+            SDL_SetRenderDrawColor(_renderer, border_color.r, border_color.g, border_color.b, border_color.a);
+            SDL_RenderDrawRect(_renderer, &fill_rect);
             return;
         }
         return;

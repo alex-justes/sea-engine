@@ -69,7 +69,6 @@ namespace core::behavior
     {
     public:
         const Point& position() const;
-    protected:
         Point& position();
     private:
         Point _position;

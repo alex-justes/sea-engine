@@ -18,16 +18,26 @@ AABB DrawableRect::bounding_box() const
     return AABB(Point(0,0), _size);
 }
 
-const RGBA& DrawableRect::color() const
+const RGBA& DrawableRect::fill_color() const
 {
-    return _color;
+    return _fill_color;
 }
 Size &DrawableRect::size()
 {
     return _size;
 }
 
-RGBA &DrawableRect::color()
+RGBA &DrawableRect::fill_color()
 {
-    return _color;
+    return _fill_color;
+}
+
+const RGBA& DrawableRect::border_color() const
+{
+    return _border_color;
+}
+
+RGBA& DrawableRect::border_color()
+{
+    return _border_color;
 }

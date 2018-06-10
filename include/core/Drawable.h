@@ -40,14 +40,18 @@ namespace core::drawable
     {
     public:
         const Size& size() const;
-        const RGBA& color() const;
+        const RGBA& fill_color() const;
+        const RGBA& border_color() const;
         Size& size();
-        RGBA& color();
+        RGBA& fill_color();
+        RGBA& border_color();
         virtual AABB bounding_box() const override;
     private:
         Size _size;
-        RGBA _color;
+        RGBA _fill_color;
+        RGBA _border_color;
     };
+
 };
 
 #endif //ENGINE_DRAWABLE_H
