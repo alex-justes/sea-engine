@@ -64,6 +64,15 @@ namespace helpers::containers
             return *this;
         }
 
+        // TODO: it may be more generic with std::common_type
+        template<typename ValueType>
+        friend Vector2D operator*(const Vector2D& lpt, const ValueType& v)
+        {
+            Vector2D pt = lpt;
+            pt *= v;
+            return pt;
+        }
+
         template<typename ValueType>
         friend Vector2D operator+(const Vector2D& lpt, const Vector2D<ValueType>& rpt)
         {
