@@ -34,7 +34,7 @@ namespace helpers::context
     {
     public:
         void set_collision_size(const Size &size);
-        const Size& collision_size() const;
+        const Size &collision_size() const;
         virtual ~CollidableObject() = default;
     private:
         Size _collision_size{0, 0};
@@ -61,14 +61,16 @@ namespace helpers::context
         virtual ~GameObject() = default;
     };
 
+    class WorldManager;
+
     class ObjectManager
     {
+        friend class WorldManager;
     private:
         using Item = std::unique_ptr<Object>;
         using Objects = std::map<Id, Item>;
     public:
         using const_iterator = typename Objects::const_iterator;
-
         template<class T, class ... Types>
         T *create(Types &&... args);
         void remove(Id id);
@@ -77,6 +79,11 @@ namespace helpers::context
         const_iterator cbegin() const;
         const_iterator cend() const;
         virtual ~ObjectManager() = default;
+    protected:
+        ObjectManager() = default;
+        using iterator = typename Objects::iterator;
+        iterator begin();
+        iterator end();
     private:
         Objects _objects;
     };
@@ -96,7 +103,9 @@ namespace helpers::context
         virtual ~WorldManager();
         void set_world_size(const Size &size);
         const Size &world_size() const;
-        void add_object(Object *object);
+        template<class T, class ... Types>
+        T *create_object(Types &&... args);
+        Object *get_object(Id id);
         void remove_object(Id id);
         void remove_object(Object *object);
         void update_objects();
@@ -105,12 +114,14 @@ namespace helpers::context
         void remove_camera(core::Camera *camera);
         void remove_camera(Id id);
         Collisions check_collisions();
+    protected:
+        void add_object(Object *object);
     private:
-        Objects _objects;
         CollisionDetector _collision_detector;
         RenderDetector _render_detector;
         core::CameraManager _camera_manager;
         core::ScreenManager &_screen_manager;
+        ObjectManager _object_manager;
         Size _world_size{0, 0};
     };
 
@@ -149,10 +160,8 @@ namespace helpers::context
         virtual void process_event(const core::Event *event);
         virtual void process_collisions(Collisions pairs);
     protected:
-        ObjectManager &object_manager();
         WorldManager &world_manager();
     private:
-        ObjectManager _object_manager;
         WorldManager _world_manager;
         ContextManager _context_manager;
     };
@@ -165,6 +174,14 @@ namespace helpers::context
         auto ptr = new T(std::forward<Types>(args)...);
         auto item = Item(ptr);
         _objects.emplace(item->unique_id(), std::move(item));
+        return ptr;
+    }
+
+    template<class T, class... Types>
+    T *WorldManager::create_object(Types &&... args)
+    {
+        auto ptr = _object_manager.create<T>(std::forward<Types>(args)...);
+        add_object(ptr);
         return ptr;
     }
 }

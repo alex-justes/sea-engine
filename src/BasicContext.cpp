@@ -35,6 +35,15 @@ ObjectManager::const_iterator ObjectManager::cend() const
 {
     return _objects.cend();
 }
+ObjectManager::iterator ObjectManager::begin()
+{
+    return _objects.begin();
+}
+
+ObjectManager::iterator ObjectManager::end()
+{
+    return _objects.end();
+}
 
 WorldManager::WorldManager(core::ScreenManager &screen_manager)
         :
@@ -51,6 +60,11 @@ WorldManager::~WorldManager()
     }
 }
 
+Object* WorldManager::get_object(Id id)
+{
+    return _object_manager.get(id);
+}
+
 void WorldManager::set_world_size(const Size &size)
 {
     _world_size = size;
@@ -58,22 +72,13 @@ void WorldManager::set_world_size(const Size &size)
     _render_detector.set_world_size(size);
 }
 
-const Size& WorldManager::world_size() const
+const Size &WorldManager::world_size() const
 {
     return _world_size;
 }
 
 void WorldManager::add_object(helpers::context::Object *object)
 {
-    if (object == nullptr)
-    {
-        return;
-    }
-    if (_objects.count(object->unique_id()) > 0)
-    {
-        return;
-    }
-    _objects[object->unique_id()] = object;
     LOG_D("Added %d to the world.", object->unique_id())
     auto collidable = dynamic_cast<CollidableObject *>(object);
     if (collidable != nullptr)
@@ -91,13 +96,14 @@ void WorldManager::add_object(helpers::context::Object *object)
 
 void WorldManager::remove_object(Id id)
 {
-    if (_objects.count(id) == 0)
+    auto object = _object_manager.get(id);
+    if (object == nullptr)
     {
         return;
     }
     _collision_detector.remove(id);
     _render_detector.remove(id);
-    _objects.erase(id);
+    _object_manager.remove(id);
 }
 
 void WorldManager::remove_object(helpers::context::Object *object)
@@ -111,9 +117,9 @@ void WorldManager::remove_object(helpers::context::Object *object)
 
 void WorldManager::update_objects()
 {
-    for (auto &item: _objects)
+    for (auto &item: _object_manager)
     {
-        auto &object = item.second;
+        Object* object = item.second.get();
         bool changed_in_action = false;
         auto actor = dynamic_cast<core::actor::Actor *>(object);
         if (actor != nullptr)
@@ -131,6 +137,19 @@ void WorldManager::update_objects()
         if (changed_in_action || updated)
         {
             // LOG_D("Update collision detectors for %d", object->unique_id())
+            auto object_with_pos = dynamic_cast<core::behavior::Position*>(object);
+            if (object_with_pos != nullptr)
+            {
+                auto& pos = object_with_pos->position();
+                if (pos.x >= _world_size.x || pos.y >= _world_size.y)
+                {
+                    _collision_detector.remove(object->unique_id());
+                    _render_detector.remove(object->unique_id());
+                    // TODO: remove from object manager
+                    remove_object(object->unique_id());
+                    continue;
+                }
+            }
             _collision_detector.update(object->unique_id());
             _render_detector.update(object->unique_id());
         }
@@ -201,7 +220,7 @@ void WorldManager::update_cameras()
             typename core::Camera::List list;
             for (const auto &id: collisions)
             {
-                auto renderable = dynamic_cast<typename core::Camera::ObjectType>(_objects[id]);
+                auto renderable = dynamic_cast<typename core::Camera::ObjectType>(_object_manager.get(id));
                 if (renderable != nullptr)
                 {
                     list.push_back(renderable);
@@ -217,12 +236,6 @@ BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManage
         Context(event_manager, screen_manager),
         _world_manager(screen_manager)
 {
-
-}
-
-ObjectManager &BasicContext::object_manager()
-{
-    return _object_manager;
 }
 
 
@@ -279,7 +292,7 @@ void CollidableObject::set_collision_size(const Size &size)
     _collision_size = size;
 }
 
-const Size& CollidableObject::collision_size() const
+const Size &CollidableObject::collision_size() const
 {
     return _collision_size;
 }
@@ -307,8 +320,8 @@ bool GameObject::update()
         collision_shape() = AABB(position(), position() + collision_size());
         if (drawable() != nullptr)
         {
-            render_shape() = AABB(drawable()->bounding_box().top_left + position(),
-                                  drawable()->bounding_box().bottom_right + position());
+            set_render_shape({drawable()->bounding_box().top_left + position(),
+                              drawable()->bounding_box().bottom_right + position()});
         }
         set_changed(false);
         return true;

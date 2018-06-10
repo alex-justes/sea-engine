@@ -72,7 +72,13 @@ namespace helpers::containers
             pt *= v;
             return pt;
         }
-
+        template<typename ValueType>
+        friend Vector2D operator/(const Vector2D& lpt, const ValueType& v)
+        {
+            Vector2D pt = lpt;
+            pt /= v;
+            return pt;
+        }
         template<typename ValueType>
         friend Vector2D operator+(const Vector2D& lpt, const Vector2D<ValueType>& rpt)
         {

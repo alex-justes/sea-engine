@@ -58,9 +58,8 @@ namespace core::behavior
         using render_shape_type = Shape;
         const render_shape_type &render_shape() const
         { return _render_shape; }
-    protected:
-        render_shape_type &render_shape()
-        { return _render_shape; }
+        void set_render_shape(const render_shape_type& shape)
+        { _render_shape = shape; }
     private:
         render_shape_type _render_shape;
     };
