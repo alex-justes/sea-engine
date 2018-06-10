@@ -4,6 +4,7 @@
 #include <set>
 #include <map>
 #include <cmath>
+#include <algorithm>
 #include "helpers/Containers.hpp"
 #include "core/BasicBehaviors.hpp"
 #include "Log.h"
@@ -233,7 +234,7 @@ namespace core::collision_detector
         {
             return;
         }
-        const auto& object = *(_objects[id].object);
+        const auto &object = *(_objects[id].object);
         auto level = calc_level(this->get_shape(object));
         auto roi = calc_roi(level, this->get_shape(object));
         if (level != _objects[id].level || roi != _objects[id].roi)
@@ -247,6 +248,10 @@ namespace core::collision_detector
     HierarchicalSpatialGrid<T, Behavior>::broad_check(const Point &pt)
     {
         SingleCollisions collisions;
+        Point fixed_pt = {
+                std::clamp(pt.x, (uint32_t) 0, _world_size.x),
+                std::clamp(pt.y, (uint32_t) 0, _world_size.y)
+        };
         for (const auto &l: _grid_map)
         {
             const auto&[level, grid] = l;
@@ -270,17 +275,23 @@ namespace core::collision_detector
     HierarchicalSpatialGrid<T, Behavior>::broad_check(const Rect &rc)
     {
         SingleCollisions collisions;
+        Rect fixed_rc = {
+                std::clamp(rc.top_left.y, (uint32_t) 0, _world_size.y),
+                std::clamp(rc.top_left.x, (uint32_t) 0, _world_size.x),
+                std::clamp(rc.bottom_right.y, (uint32_t) 0, _world_size.y),
+                std::clamp(rc.bottom_right.x, (uint32_t) 0, _world_size.x)
+        };
         for (const auto &l: _grid_map)
         {
             const auto&[level, grid] = l;
-            auto roi = calc_roi(level, rc);
+            auto roi = calc_roi(level, fixed_rc);
             for (uint32_t y = roi.top_left.y; y <= roi.bottom_right.y; ++y)
             {
                 for (uint32_t x = roi.top_left.x; x <= roi.bottom_right.x; ++x)
                 {
                     for (const auto &o: grid[y][x])
                     {
-                        if (rc && this->get_shape(*_objects[o].object))
+                        if (fixed_rc && this->get_shape(*_objects[o].object))
                         {
                             collisions.insert(o);
                         }
