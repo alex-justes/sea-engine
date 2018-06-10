@@ -93,7 +93,7 @@ namespace core::behavior
     class Updatable: public virtual IBehavior
     {
     public:
-        virtual bool update(bool force=false) = 0;
+        virtual bool update(bool force) = 0;
     };
 
     // ===============================================

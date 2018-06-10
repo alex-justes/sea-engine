@@ -175,12 +175,12 @@ namespace core::collision_detector
             _grid_map[level].create({_world_size.y / cell_size + 1, _world_size.x / cell_size + 1});
             _objects_per_level[level] = 0;
         }
-        LOG_D("Add: %d to l: %d", id, level)
+//        LOG_D("Add: %d to l: %d", id, level)
         for (uint32_t y = roi.top_left.y; y <= roi.bottom_right.y; ++y)
         {
             for (uint32_t x = roi.top_left.x; x <= roi.bottom_right.x; ++x)
             {
-                LOG_D("      x: %d y: %d", x, y)
+//                LOG_D("      x: %d y: %d", x, y)
                 _grid_map[level][y][x].insert(id);
             }
         }
@@ -201,7 +201,7 @@ namespace core::collision_detector
         {
             return;
         }
-        LOG_D("Remove: %d", id)
+//        LOG_D("Remove: %d", id)
         auto object_info = _objects[id];
         auto level = object_info.level;
         auto roi = object_info.roi;

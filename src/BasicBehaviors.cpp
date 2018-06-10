@@ -6,6 +6,7 @@ const Point &Position::position() const
 {
     return _position;
 }
+
 void Position::set_position(const Point& position)
 {
     _position = position;

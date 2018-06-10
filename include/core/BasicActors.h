@@ -7,7 +7,7 @@ namespace core::actor
     {
     public:
         virtual ~Actor() = default;
-        virtual bool act() = 0;
+        virtual bool act(uint32_t time_elapsed) = 0;
     };
 
 }

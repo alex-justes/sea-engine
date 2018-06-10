@@ -51,7 +51,7 @@ namespace helpers::context
         const Size &collision_size() const;
         virtual ~CollidableObject() = default;
         Collisions& collisions();
-        virtual bool update(bool force=false) override;
+        virtual bool update(bool force) override;
     private:
         Size _collision_size{0, 0};
         Collisions _collisions;
@@ -74,8 +74,8 @@ namespace helpers::context
     {
     public:
         void set_position(const Point &pos) override;
-        virtual bool update(bool force=false) override;
-        virtual bool act() override;
+        virtual bool update(bool force) override;
+        virtual bool act(uint32_t time_elapsed) override;
         virtual ~GameObject() = default;
     };
 
@@ -133,6 +133,7 @@ namespace helpers::context
         void remove_camera(Id id);
         Collisions check_collisions();
         ObjectManager& object_manager();
+        void set_time_elapsed(uint32_t time_elapsed);
     protected:
         void add_object(Object *object);
     private:
@@ -142,6 +143,7 @@ namespace helpers::context
         core::ScreenManager &_screen_manager;
         ObjectManager _object_manager;
         Size _world_size{0, 0};
+        uint32_t _time_elapsed;
     };
 
     class ContextManager

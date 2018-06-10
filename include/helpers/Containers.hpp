@@ -2,6 +2,7 @@
 #define UTILITY_CONTAINERS_HPP
 #include <memory>
 #include <numeric>
+#include <cmath>
 
 namespace helpers::containers
 {
@@ -111,6 +112,11 @@ namespace helpers::containers
         friend bool operator!=(const Vector2D& lhs, const Vector2D& rhs)
         {
             return !(lhs == rhs);
+        }
+
+        T length() const
+        {
+            return static_cast<T>(std::sqrt(x*x + y*y));
         }
 
         T x;

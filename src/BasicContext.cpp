@@ -115,6 +115,11 @@ void WorldManager::remove_object(helpers::context::Object *object)
     remove_object(object->unique_id());
 }
 
+void WorldManager::set_time_elapsed(uint32_t time_elapsed)
+{
+    _time_elapsed = time_elapsed;
+}
+
 void WorldManager::update_objects()
 {
     for (auto &item: _object_manager)
@@ -129,14 +134,14 @@ void WorldManager::update_objects()
         if (actor != nullptr)
         {
             //LOG_D("Act: %d", object->unique_id())
-            changed_in_action = actor->act();
+            changed_in_action = actor->act(_time_elapsed);
         }
         bool updated = false;
         auto updatable = dynamic_cast<core::behavior::Updatable *>(object);
         if (updatable != nullptr)
         {
             // LOG_D("Update: %d", object->unique_id())
-            updated = updatable->update();
+            updated = updatable->update(false);
         }
         if (changed_in_action || updated)
         {
@@ -261,6 +266,7 @@ BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManage
 
 void BasicContext::evaluate(uint32_t time_elapsed)
 {
+    world_manager().set_time_elapsed(time_elapsed);
     Item event;
     // Process events
     while (events_pop(event))
@@ -295,6 +301,19 @@ void BasicContext::evaluate(uint32_t time_elapsed)
 
 void BasicContext::process_collisions(BasicContext::Collisions pairs)
 {
+    for (const auto& [id1, id2]: pairs)
+    {
+        auto obj1 = dynamic_cast<helpers::context::CollidableObject*>(world_manager().get_object(id1));
+        auto obj2 = dynamic_cast<helpers::context::CollidableObject*>(world_manager().get_object(id2));
+        if (obj1 != nullptr)
+        {
+            obj1->collisions().push_back(obj2);
+        }
+        if (obj2 != nullptr)
+        {
+            obj2->collisions().push_back(obj1);
+        }
+    }
 }
 
 void BasicContext::process_event(const core::Event *event)
@@ -390,7 +409,7 @@ bool GameObject::update(bool force)
     return false;
 }
 
-bool GameObject::act()
+bool GameObject::act(uint32_t time_elapsed)
 {
     return false;
 }
