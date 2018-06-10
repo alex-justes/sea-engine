@@ -29,6 +29,7 @@ namespace helpers::context
     class CollidableObject :
             public virtual Object,
             public virtual UpdatableObject,
+            public virtual core::behavior::Position,
             public core::behavior::CollisionShape<AABB>
     {
     public:
