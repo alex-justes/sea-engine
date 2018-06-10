@@ -58,6 +58,11 @@ void WorldManager::set_world_size(const Size &size)
     _render_detector.set_world_size(size);
 }
 
+const Size& WorldManager::world_size() const
+{
+    return _world_size;
+}
+
 void WorldManager::add_object(helpers::context::Object *object)
 {
     if (object == nullptr)

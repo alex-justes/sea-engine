@@ -131,7 +131,7 @@ namespace core::collision_detector
     template<class T, template<class> class Behavior>
     uint32_t HierarchicalSpatialGrid<T, Behavior>::calc_cell_size(uint32_t level)
     {
-        return (uint32_t) (std::exp2(level));
+        return (uint32_t) (std::exp2(level + 1));
     }
 
     template<class T, template<class> class Behavior>

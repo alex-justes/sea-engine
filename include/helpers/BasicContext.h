@@ -82,6 +82,7 @@ namespace helpers::context
         explicit WorldManager(core::ScreenManager& screen_manager);
         virtual ~WorldManager();
         void set_world_size(const Size& size);
+        const Size& world_size() const;
         void add_object(Object *object);
         void remove_object(Id id);
         void remove_object(Object *object);
