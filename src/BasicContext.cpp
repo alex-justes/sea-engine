@@ -297,7 +297,7 @@ bool UpdatableObject::changed() const
 void GameObject::set_position(const Point &pos)
 {
     set_changed(true);
-    position() = pos;
+    core::behavior::Position::set_position(pos);
 }
 
 bool GameObject::update()

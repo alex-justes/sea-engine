@@ -69,7 +69,7 @@ namespace core::behavior
     {
     public:
         const Point& position() const;
-        Point& position();
+        virtual void set_position(const Point& position);
     private:
         Point _position;
     };

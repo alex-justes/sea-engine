@@ -55,7 +55,7 @@ namespace helpers::context
             public core::actor::Actor
     {
     public:
-        void set_position(const Point &pos);
+        void set_position(const Point &pos) override;
         virtual bool update() override;
         virtual bool act() override;
         virtual ~GameObject() = default;

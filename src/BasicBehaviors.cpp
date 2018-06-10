@@ -6,9 +6,9 @@ const Point &Position::position() const
 {
     return _position;
 }
-Point &Position::position()
+void Position::set_position(const Point& position)
 {
-    return _position;
+    _position = position;
 }
 uint32_t Renderable::z_order() const
 {

@@ -4,7 +4,7 @@ using namespace core;
 
 Camera::Camera(const Point &position, const Size &size)
 {
-    this->position() = position;
+    this->set_position(position);
     this->size() = size;
     LOG_D("Camera %d created", unique_id())
 }
