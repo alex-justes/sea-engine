@@ -60,7 +60,7 @@ WorldManager::~WorldManager()
     }
 }
 
-Object* WorldManager::get_object(Id id)
+Object *WorldManager::get_object(Id id)
 {
     return _object_manager.get(id);
 }
@@ -119,7 +119,11 @@ void WorldManager::update_objects()
 {
     for (auto &item: _object_manager)
     {
-        Object* object = item.second.get();
+        Object *object = item.second.get();
+        if (object->dead())
+        {
+            continue;
+        }
         bool changed_in_action = false;
         auto actor = dynamic_cast<core::actor::Actor *>(object);
         if (actor != nullptr)
@@ -137,21 +141,32 @@ void WorldManager::update_objects()
         if (changed_in_action || updated)
         {
             // LOG_D("Update collision detectors for %d", object->unique_id())
-            auto object_with_pos = dynamic_cast<core::behavior::Position*>(object);
+            auto object_with_pos = dynamic_cast<core::behavior::Position *>(object);
             if (object_with_pos != nullptr)
             {
-                auto& pos = object_with_pos->position();
+                auto &pos = object_with_pos->position();
                 if (pos.x >= _world_size.x || pos.y >= _world_size.y)
                 {
-                    _collision_detector.remove(object->unique_id());
-                    _render_detector.remove(object->unique_id());
-                    // TODO: remove from object manager
-                    remove_object(object->unique_id());
+                    object->set_dead();
                     continue;
                 }
             }
             _collision_detector.update(object->unique_id());
             _render_detector.update(object->unique_id());
+        }
+
+        auto collidable = dynamic_cast<CollidableObject *>(object);
+        if (collidable != nullptr)
+        {
+            collidable->collisions().clear();
+        }
+    }
+    for (auto &item: _object_manager)
+    {
+        Object* object = item.second.get();
+        if (object->dead())
+        {
+            remove_object(object->unique_id());
         }
     }
 }
@@ -164,6 +179,11 @@ WorldManager &BasicContext::world_manager()
 WorldManager::Collisions WorldManager::check_collisions()
 {
     return _collision_detector.broad_check();
+}
+
+ObjectManager &WorldManager::object_manager()
+{
+    return _object_manager;
 }
 
 core::Camera *WorldManager::create_camera(const Point &position, const Size &size)
@@ -292,9 +312,29 @@ void CollidableObject::set_collision_size(const Size &size)
     _collision_size = size;
 }
 
+CollidableObject::Collisions &CollidableObject::collisions()
+{
+    return _collisions;
+}
+
 const Size &CollidableObject::collision_size() const
 {
     return _collision_size;
+}
+
+ObjectManager *Object::object_manager()
+{
+    return _object_manager;
+}
+
+bool Object::dead() const
+{
+    return _dead;
+}
+
+void Object::set_dead()
+{
+    _dead = true;
 }
 
 void UpdatableObject::set_changed(bool changed)
@@ -313,17 +353,38 @@ void GameObject::set_position(const Point &pos)
     core::behavior::Position::set_position(pos);
 }
 
-bool GameObject::update()
+bool RenderableObject::update(bool force)
 {
-    if (changed())
+    if (force || changed())
     {
-        collision_shape() = AABB(position(), position() + collision_size());
         if (drawable() != nullptr)
         {
             set_render_shape({drawable()->bounding_box().top_left + position(),
                               drawable()->bounding_box().bottom_right + position()});
         }
         set_changed(false);
+        return true;
+    }
+    return false;
+}
+
+bool CollidableObject::update(bool force)
+{
+    if (force || changed())
+    {
+        collision_shape() = AABB(position(), position() + collision_size());
+        set_changed(false);
+        return true;
+    }
+    return false;
+}
+
+bool GameObject::update(bool force)
+{
+    if (force || changed())
+    {
+        CollidableObject::update(true);
+        RenderableObject::update(true);
         return true;
     }
     return false;

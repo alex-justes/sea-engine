@@ -12,9 +12,9 @@ ScreenManager::ScreenManager(SDL_Renderer *renderer)
 
 }
 
-Id ScreenManager::create_screen(const Roi &roi, uint32_t z_order)
+Id ScreenManager::create_screen(const Roi &roi, uint32_t z_order, const RGBA& base_color)
 {
-    auto screen = new Screen(roi, z_order, _renderer);
+    auto screen = new Screen(roi, z_order, _renderer, base_color);
     _screens.emplace(screen->unique_id(), screen);
     return screen->unique_id();
 }

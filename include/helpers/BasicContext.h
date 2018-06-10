@@ -9,10 +9,23 @@
 
 namespace helpers::context
 {
+    class ObjectManager;
+    class WorldManager;
+
     class Object : public core::behavior::UniqueId<Id>
     {
+        friend class ObjectManager;
+        friend class WorldManager;
     public:
         virtual ~Object() = default;
+        bool dead() const;
+    protected:
+        Object() = default;
+        ObjectManager* object_manager();
+        void set_dead();
+    private:
+        ObjectManager* _object_manager {nullptr};
+        bool _dead{false};
     };
 
     class UpdatableObject :
@@ -33,11 +46,15 @@ namespace helpers::context
             public core::behavior::CollisionShape<AABB>
     {
     public:
+        using Collisions = std::list<const Object*>;
         void set_collision_size(const Size &size);
         const Size &collision_size() const;
         virtual ~CollidableObject() = default;
+        Collisions& collisions();
+        virtual bool update(bool force=false) override;
     private:
         Size _collision_size{0, 0};
+        Collisions _collisions;
     };
 
     class RenderableObject :
@@ -46,6 +63,7 @@ namespace helpers::context
             public core::behavior::Renderable
     {
     public:
+        virtual bool update(bool force=false) override;
         virtual ~RenderableObject() = default;
     };
 
@@ -56,7 +74,7 @@ namespace helpers::context
     {
     public:
         void set_position(const Point &pos) override;
-        virtual bool update() override;
+        virtual bool update(bool force=false) override;
         virtual bool act() override;
         virtual ~GameObject() = default;
     };
@@ -71,19 +89,19 @@ namespace helpers::context
         using Objects = std::map<Id, Item>;
     public:
         using const_iterator = typename Objects::const_iterator;
+        using iterator = typename Objects::iterator;
+        Object *get(Id id);
+        const_iterator cbegin() const;
+        const_iterator cend() const;
+        iterator begin();
+        iterator end();
+        virtual ~ObjectManager() = default;
+    protected:
+        ObjectManager() = default;
         template<class T, class ... Types>
         T *create(Types &&... args);
         void remove(Id id);
         void remove(Object *object);
-        Object *get(Id id);
-        const_iterator cbegin() const;
-        const_iterator cend() const;
-        virtual ~ObjectManager() = default;
-    protected:
-        ObjectManager() = default;
-        using iterator = typename Objects::iterator;
-        iterator begin();
-        iterator end();
     private:
         Objects _objects;
     };
@@ -114,6 +132,7 @@ namespace helpers::context
         void remove_camera(core::Camera *camera);
         void remove_camera(Id id);
         Collisions check_collisions();
+        ObjectManager& object_manager();
     protected:
         void add_object(Object *object);
     private:
@@ -172,6 +191,7 @@ namespace helpers::context
     {
         static_assert(std::is_base_of_v<Object, T>, "T should be derived from Object");
         auto ptr = new T(std::forward<Types>(args)...);
+        ptr->_object_manager = this;
         auto item = Item(ptr);
         _objects.emplace(item->unique_id(), std::move(item));
         return ptr;
