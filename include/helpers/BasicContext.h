@@ -15,16 +15,33 @@ namespace helpers::context
         virtual ~Object() = default;
     };
 
+    class UpdatableObject :
+            public virtual Object,
+            public core::behavior::Updatable
+    {
+    public:
+        void set_changed(bool changed);
+        bool changed() const;
+    private:
+        bool _changed{true};
+    };
+
     class CollidableObject :
             public virtual Object,
+            public virtual UpdatableObject,
             public core::behavior::CollisionShape<AABB>
     {
     public:
+        void set_collision_size(const Size &size);
+        const Size& collision_size() const;
         virtual ~CollidableObject() = default;
+    private:
+        Size _collision_size{0, 0};
     };
 
     class RenderableObject :
             public virtual Object,
+            public virtual UpdatableObject,
             public core::behavior::Renderable
     {
     public:
@@ -34,18 +51,13 @@ namespace helpers::context
     class GameObject :
             public CollidableObject,
             public RenderableObject,
-            public core::behavior::Updatable,
             public core::actor::Actor
     {
     public:
-        void set_collision_size(const Size &size);
         void set_position(const Point &pos);
         virtual bool update() override;
         virtual bool act() override;
         virtual ~GameObject() = default;
-    private:
-        Size _collision_size{0, 0};
-        bool _changed{true};
     };
 
     class ObjectManager
@@ -79,17 +91,17 @@ namespace helpers::context
         using RenderDetector = BroadCollisionDetector<RenderableObject, core::behavior::RenderShape>;
     public:
         using Collisions = CollisionDetector::PairCollisions;
-        explicit WorldManager(core::ScreenManager& screen_manager);
+        explicit WorldManager(core::ScreenManager &screen_manager);
         virtual ~WorldManager();
-        void set_world_size(const Size& size);
-        const Size& world_size() const;
+        void set_world_size(const Size &size);
+        const Size &world_size() const;
         void add_object(Object *object);
         void remove_object(Id id);
         void remove_object(Object *object);
         void update_objects();
         void update_cameras();
-        core::Camera* create_camera(const Point& position, const Size& size);
-        void remove_camera(core::Camera* camera);
+        core::Camera *create_camera(const Point &position, const Size &size);
+        void remove_camera(core::Camera *camera);
         void remove_camera(Id id);
         Collisions check_collisions();
     private:
@@ -97,8 +109,8 @@ namespace helpers::context
         CollisionDetector _collision_detector;
         RenderDetector _render_detector;
         core::CameraManager _camera_manager;
-        core::ScreenManager& _screen_manager;
-        Size _world_size {0,0};
+        core::ScreenManager &_screen_manager;
+        Size _world_size{0, 0};
     };
 
     class ContextManager

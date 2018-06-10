@@ -273,29 +273,44 @@ void BasicContext::initialize()
 }
 
 
-void GameObject::set_collision_size(const Size &size)
+void CollidableObject::set_collision_size(const Size &size)
 {
-    _changed = true;
+    set_changed(true);
     _collision_size = size;
+}
+
+const Size& CollidableObject::collision_size() const
+{
+    return _collision_size;
+}
+
+void UpdatableObject::set_changed(bool changed)
+{
+    _changed = changed;
+}
+
+bool UpdatableObject::changed() const
+{
+    return _changed;
 }
 
 void GameObject::set_position(const Point &pos)
 {
-    _changed = true;
+    set_changed(true);
     position() = pos;
 }
 
 bool GameObject::update()
 {
-    if (_changed)
+    if (changed())
     {
-        collision_shape() = AABB(position(), position() + _collision_size);
+        collision_shape() = AABB(position(), position() + collision_size());
         if (drawable() != nullptr)
         {
             render_shape() = AABB(drawable()->bounding_box().top_left + position(),
                                   drawable()->bounding_box().bottom_right + position());
         }
-        _changed = false;
+        set_changed(false);
         return true;
     }
     return false;
