@@ -200,6 +200,7 @@ namespace core::collision_detector
         {
             return;
         }
+        LOG_D("Remove: %d", id)
         auto object_info = _objects[id];
         auto level = object_info.level;
         auto roi = object_info.roi;
@@ -216,7 +217,6 @@ namespace core::collision_detector
             _grid_map.erase(level);
         }
         _objects.erase(id);
-
     }
 
     template<class T, template<class> class Behavior>
