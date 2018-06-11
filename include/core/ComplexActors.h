@@ -1,7 +1,7 @@
 #ifndef ENGINE_COMPLEXACTORS_H
 #define ENGINE_COMPLEXACTORS_H
 
-namespace core::actor::complex
+namespace core::complex::actor
 {
 
 }

@@ -10,7 +10,7 @@
 namespace helpers::context
 {
     using namespace core;
-    using Object = object::basic::Object;
+    using Object = basic::object::Object;
 
     class WorldManager;
 
@@ -46,8 +46,8 @@ namespace helpers::context
         using Objects = std::map<Id, Item>;
         template<class T, template<class> class Behavior>
         using BroadCollisionDetector = typename core::collision_detector::HierarchicalSpatialGrid<T, Behavior>;
-        using CollisionDetector = BroadCollisionDetector<object::basic::CollidableObject, behavior::basic::CollisionShape>;
-        using RenderDetector = BroadCollisionDetector<object::basic::RenderableObject, behavior::basic::RenderShape>;
+        using CollisionDetector = BroadCollisionDetector<basic::object::CollidableObject, basic::behavior::CollisionShape>;
+        using RenderDetector = BroadCollisionDetector<basic::object::RenderableObject, basic::behavior::RenderShape>;
     public:
         using Collisions = CollisionDetector::PairCollisions;
         explicit WorldManager(core::ScreenManager &screen_manager);
@@ -59,8 +59,12 @@ namespace helpers::context
         Object *get_object(Id id);
         void remove_object(Id id);
         void remove_object(Object *object);
+        void initialize_objects();
+        void evaluate_objects(uint32_t time_elapsed);
         void update_objects();
         void update_cameras();
+        void check_dead_objects();
+        void remove_objects();
         core::Camera *create_camera(const Point &position, const Size &size);
         void remove_camera(core::Camera *camera);
         void remove_camera(Id id);
@@ -69,9 +73,19 @@ namespace helpers::context
         void set_time_elapsed(uint32_t time_elapsed);
     protected:
         void add_object(Object *object);
-        void add_to_creation_queue(Object *object);
+        void remove_object_impl(Id id);
     private:
-        std::list<Object *> _objects_to_add;
+        struct UpdateInfo
+        {
+            basic::actor::Update* actor;
+            basic::object::CollidableObject* collidable;
+            basic::object::RenderableObject* renderable;
+            basic::object::Object*           object;
+        };
+        std::list<basic::actor::Initialize  *> _initialization_list;
+        std::map<Id, basic::actor::Evaluate *> _actors_to_evaluate;
+        std::map<Id, UpdateInfo> _objects_to_update;
+        std::set<Id> _death_note;
         CollisionDetector _collision_detector;
         RenderDetector _render_detector;
         core::CameraManager _camera_manager;
@@ -138,7 +152,15 @@ namespace helpers::context
     T *WorldManager::create_object(Types &&... args)
     {
         auto ptr = _object_manager.create<T>(std::forward<Types>(args)...);
-        add_to_creation_queue(ptr);
+        if constexpr (std::is_base_of_v<basic::actor::Initialize, T>)
+        {
+            LOG_D("Added %d to initialization list", ptr->unique_id())
+            _initialization_list.push_back(static_cast<basic::actor::Initialize*>(ptr));
+        }
+        else
+        {
+            add_object(ptr);
+        }
         return ptr;
     }
 }

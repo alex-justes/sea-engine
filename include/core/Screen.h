@@ -12,23 +12,22 @@ namespace core
 {
     class ScreenManager;
 
-    class Screen: public behavior::UniqueId<Id>
+    class Screen:
+            public virtual basic::behavior::UniqueId<Id>,
+            public virtual basic::behavior::Z_Order
     {
         friend class ScreenManager;
     public:
         Screen() = delete;
         SDL_Texture* render();
         const Roi& roi() const;
-        int z_order() const;
         virtual ~Screen();
     protected:
         void attach_camera(Camera* camera);
         void detach_camera();
         bool camera_attached();
-        using PointI32 = helpers::containers::Point2D<int32_t>;
-        Screen(const Roi& roi, uint32_t z_order, SDL_Renderer* renderer, const RGBA& base_color);
+        Screen(const Roi& roi, int32_t z_order, SDL_Renderer* renderer, const RGBA& base_color);
         void render(const drawable::Drawable* drawable, const PointI32& position);
-        void change_z_order(uint32_t z_order);
     private:
         Roi _roi;
         SDL_Texture* _texture {nullptr};

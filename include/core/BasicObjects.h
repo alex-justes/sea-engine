@@ -5,15 +5,16 @@
 #include "core/ComplexBehaviors.hpp"
 #include "core/BasicActors.h"
 
-namespace core::object::basic
+namespace core::basic::object
 {
     using namespace core;
-    class ObjectManager;
+    using ObjectManager = helpers::context::ObjectManager;
 
     class Object :
-            public virtual behavior::basic::UniqueId<Id>,
-            public virtual behavior::basic::Dead
+            public virtual basic::behavior::UniqueId<Id>,
+            public virtual basic::behavior::Dead
     {
+        friend class helpers::context::ObjectManager;
     public:
         virtual ~Object() = default;
     protected:
@@ -26,22 +27,22 @@ namespace core::object::basic
 
     class InitializableObject :
             public virtual Object,
-            public actor::basic::Initialize
+            public basic::actor::Initialize
     { };
 
     class UpdatableObject :
             public virtual Object,
-            public virtual behavior::basic::Changed,
-            public actor::basic::Update
+            public virtual basic::behavior::Changed,
+            public basic::actor::Update
     { };
 
     class CollidableObject :
             public virtual InitializableObject,
-            public virtual behavior::basic::Position,
-            public virtual behavior::basic::CollisionShape<AABB>,
-            public virtual behavior::basic::CollisionSize<Size>,
+            public virtual basic::behavior::Position,
+            public virtual basic::behavior::CollisionShape<AABB>,
+            public virtual basic::behavior::CollisionSize<Size>
     {
-        friend class ObjectManager;
+        friend class helpers::context::BasicContext;
     public:
         using Collisions = std::list<const CollidableObject*>;
         const Collisions& collisions() const;
@@ -53,7 +54,7 @@ namespace core::object::basic
 
     class RenderableObject:
             public virtual InitializableObject,
-            public virtual behavior::complex::Renderable
+            public virtual complex::behavior::Renderable
     { };
 
 

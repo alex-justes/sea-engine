@@ -3,14 +3,14 @@
 
 #include "core/BasicBehaviors.hpp"
 
-namespace core::behavior::complex
+namespace core::complex::behavior
 {
-    using namespace core::behavior;
+    using namespace core;
 
     class Renderable:
-            public virtual basic::Position,
-            public virtual basic::Z_Order,
-            public virtual basic::RenderShape<AABB>
+            public virtual basic::behavior::Position,
+            public virtual basic::behavior::Z_Order,
+            public virtual basic::behavior::RenderShape<AABB>
     {
     public:
         using Drawable = core::drawable::Drawable;

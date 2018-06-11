@@ -1,7 +1,7 @@
 #include "core/ComplexBehaviors.hpp"
 
 
-using namespace core::behavior::complex;
+using namespace core::complex::behavior;
 
 const core::drawable::Drawable *Renderable::drawable() const
 {

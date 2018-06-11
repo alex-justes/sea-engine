@@ -1,6 +1,6 @@
 #include "core/BasicObjects.h"
 
-using namespace core::object::basic;
+using namespace core::basic::object;
 
 ObjectManager* Object::object_manager()
 {

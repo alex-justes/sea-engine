@@ -3,7 +3,7 @@
 
 #include <list>
 #include <map>
-#include "core/BasicBehaviors.hpp"
+#include "core/ComplexBehaviors.hpp"
 #include "core/Types.h"
 
 namespace core
@@ -12,13 +12,13 @@ namespace core
     class CameraManager;
 
     class Camera:
-            public behavior::Position,
-            public behavior::UniqueId<Id>
+            public virtual basic::behavior::Position,
+            public virtual basic::behavior::UniqueId<Id>
     {
         friend class ScreenManager;
         friend class CameraManager;
     public:
-        using ObjectType = const behavior::Renderable*;
+        using ObjectType = const complex::behavior::Renderable*;
         using List = std::list<ObjectType>;
         void update_visible_objects(List&& list);
         const List& get_visible_objects() const;
@@ -28,13 +28,15 @@ namespace core
     protected:
         Camera() = delete;
         Camera(const Point& position, const Size& size);
-        Size& size();
+        void set_size(const Size& size);
     private:
         uint32_t _screens_attached {0};
         Size _size;
         List _objects;
     };
 
+
+    // TODO: friend world manager ?
     class CameraManager
     {
         friend class WorldManager;

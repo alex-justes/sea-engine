@@ -4,13 +4,13 @@
 
 using namespace core;
 
-Screen::Screen(const Roi &roi, uint32_t z_order, SDL_Renderer *renderer, const RGBA& base_color)
+Screen::Screen(const Roi &roi, int32_t z_order, SDL_Renderer *renderer, const RGBA& base_color)
         :
         _roi(roi),
         _renderer(renderer),
-        _z_order(z_order),
         _base_color(base_color)
 {
+    set_z_order(z_order);
     _texture = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, roi.width(),
                                  roi.height());
     if (_texture == nullptr)
@@ -40,19 +40,9 @@ void Screen::detach_camera()
     _camera = nullptr;
 }
 
-int Screen::z_order() const
-{
-    return _z_order;
-}
-
 const Roi& Screen::roi() const
 {
     return _roi;
-}
-
-void Screen::change_z_order(uint32_t z_order)
-{
-    _z_order = z_order;
 }
 
 SDL_Texture* Screen::render()
@@ -63,7 +53,7 @@ SDL_Texture* Screen::render()
         SDL_SetRenderTarget(_renderer, _texture);
         SDL_SetRenderDrawColor(_renderer, _base_color.r, _base_color.g, _base_color.b, _base_color.a);
         SDL_RenderClear(_renderer);
-        auto map = std::multimap<uint32_t, const behavior::Renderable *>();
+        auto map = std::multimap<uint32_t, const complex::behavior::Renderable *>();
         for (const auto &object: camera->get_visible_objects())
         {
             map.emplace(object->z_order(), object);
@@ -89,8 +79,8 @@ SDL_Texture* Screen::render()
         for (const auto &item: map)
         {
             const auto &object = item.second;
-            PointI32 obj_pos = {object->position().x, object->position().y};
-            PointI32 cam_pos = {camera->position().x, camera->position().y};
+            PointI32 obj_pos = object->position();
+            PointI32 cam_pos = camera->position();
             render(object->drawable(), obj_pos - cam_pos + offset);
         }
         SDL_SetRenderTarget(_renderer, nullptr);
@@ -112,7 +102,6 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
             SDL_SetRenderDrawColor(_renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
             SDL_RenderFillRect(_renderer, &fill_rect);
             const auto& border_color = rect->border_color();
-
             SDL_SetRenderDrawColor(_renderer, border_color.r, border_color.g, border_color.b, border_color.a);
             SDL_RenderDrawRect(_renderer, &fill_rect);
             return;

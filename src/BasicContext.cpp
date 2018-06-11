@@ -2,6 +2,7 @@
 #include "core/Events.h"
 
 using namespace helpers::context;
+using namespace core;
 
 void ObjectManager::remove(Id id)
 {
@@ -77,40 +78,43 @@ const Size &WorldManager::world_size() const
     return _world_size;
 }
 
-void WorldManager::add_to_creation_queue(helpers::context::Object *object)
-{
-
-    LOG_D("Added %d to creation queue", object->unique_id())
-    _objects_to_add.push_back(object);
-}
-
-void WorldManager::add_object(helpers::context::Object *object)
+void WorldManager::add_object(Object *object)
 {
     LOG_D("Added %d to the world.", object->unique_id())
-    auto collidable = dynamic_cast<CollidableObject *>(object);
+
+    auto collidable = dynamic_cast<basic::object::CollidableObject *>(object);
     if (collidable != nullptr)
     {
         _collision_detector.add(*collidable);
         LOG_D("Added %d to collision_detector.", collidable->unique_id())
     }
-    auto renderable = dynamic_cast<RenderableObject *>(object);
+
+    auto renderable = dynamic_cast<basic::object::RenderableObject *>(object);
     if (renderable != nullptr)
     {
         _render_detector.add(*renderable);
         LOG_D("Added %d to render_detector.", renderable->unique_id())
     }
+
+    auto evaluatable = dynamic_cast<basic::actor::Evaluate *>(object);
+    if (evaluatable != nullptr)
+    {
+        _actors_to_evaluate[object->unique_id()] = evaluatable;
+        LOG_D("Added %d to evaluate-list.", renderable->unique_id())
+    }
+
+    auto updatable = dynamic_cast<basic::actor::Update *>(object);
+    if (updatable != nullptr)
+    {
+        _objects_to_update[object->unique_id()] = {updatable, collidable, renderable, object};
+        LOG_D("Added %d to update-list.", renderable->unique_id())
+    }
 }
 
 void WorldManager::remove_object(Id id)
 {
-    auto object = _object_manager.get(id);
-    if (object == nullptr)
-    {
-        return;
-    }
-    _collision_detector.remove(id);
-    _render_detector.remove(id);
-    _object_manager.remove(id);
+    _death_note.insert(id);
+    LOG_D("Object %d added to death note.", id)
 }
 
 void WorldManager::remove_object(helpers::context::Object *object)
@@ -122,12 +126,99 @@ void WorldManager::remove_object(helpers::context::Object *object)
     remove_object(object->unique_id());
 }
 
+void WorldManager::remove_objects()
+{
+    if (_death_note.empty())
+    {
+        return;
+    }
+    for (auto id: _death_note)
+    {
+        remove_object_impl(id);
+    }
+    _death_note.clear();
+}
+
+void WorldManager::remove_object_impl(Id id)
+{
+    _actors_to_evaluate.erase(id);
+    _objects_to_update.erase(id);
+    _collision_detector.remove(id);
+    _render_detector.remove(id);
+    _object_manager.remove(id);
+}
+
 void WorldManager::set_time_elapsed(uint32_t time_elapsed)
 {
     _time_elapsed = time_elapsed;
 }
 
+void WorldManager::evaluate_objects(uint32_t time_elapsed)
+{
+    for (auto&[id, actor]: _actors_to_evaluate)
+    {
+        actor->evaluate(time_elapsed);
+    }
+}
+
 void WorldManager::update_objects()
+{
+    if (_objects_to_update.empty())
+    {
+        return;
+    }
+    struct DetectorUpdateInfo
+    {
+        basic::object::CollidableObject *collidable;
+        basic::object::RenderableObject *renderable;
+        basic::object::Object *object;
+    };
+    std::list<DetectorUpdateInfo> detector_updates;
+    for (auto&[id, update_info]: _objects_to_update)
+    {
+        auto&[actor, collidable, renderable, object] = update_info;
+        if (actor->update(false) && (collidable != nullptr || renderable != nullptr))
+        {
+            detector_updates.push_back({collidable, renderable, object});
+        }
+    }
+
+    for (auto &[collidable, renderable, object]: detector_updates)
+    {
+        auto object_with_pos = dynamic_cast<basic::behavior::Position *>(object);
+        if (object_with_pos != nullptr)
+        {
+            auto &pos = object_with_pos->position();
+            if (pos.x >= _world_size.x || pos.y >= _world_size.y)
+            {
+                LOG_W("Mr. Anderson tried to escape matrix (unsuccessfully)...")
+                object->set_dead();
+                continue;
+            }
+        }
+        if (collidable != nullptr)
+        {
+            _collision_detector.update(collidable->unique_id());
+        }
+        if (renderable != nullptr)
+        {
+            _render_detector.update(renderable->unique_id());
+        }
+    }
+}
+
+void WorldManager::check_dead_objects()
+{
+    for (auto& [id, object]: _object_manager)
+    {
+        if (object->dead())
+        {
+            remove_object(object->unique_id());
+        }
+    }
+}
+
+/*void WorldManager::update_objects()
 {
     for (auto &item: _object_manager)
     {
@@ -182,11 +273,25 @@ void WorldManager::update_objects()
             remove_object(object->unique_id());
         }
     }
-    for (auto &object: _objects_to_add)
+    for (auto &object: _initialization_list)
     {
         add_object(object);
     }
-    _objects_to_add.clear();
+    _initialization_list.clear();
+}*/
+
+void WorldManager::initialize_objects()
+{
+    if (_initialization_list.empty())
+    {
+        return;
+    }
+    for (auto &object: _initialization_list)
+    {
+        object->initialize();
+        add_object(dynamic_cast<Object *>(object));
+    }
+    _initialization_list.clear();
 }
 
 WorldManager &BasicContext::world_manager()
@@ -236,24 +341,12 @@ void WorldManager::update_cameras()
 {
     for (auto &item: _camera_manager)
     {
-        auto &camera = item.second;
+        Camera *camera = item.second.get();
         if (camera->active())
         {
-            // Weirdo... %|
-            // All Hail Big Flying Spaghetti Monster!
-            Point cam_pos = ((const core::Camera *) (camera.get()))->position();
-            Point cam_size = ((const core::Camera *) (camera.get()))->size();
-            Point bottom_right = cam_pos + cam_size;
-            Roi roi{
-                    Point{
-                            std::min(cam_pos.x, _world_size.x),
-                            std::min(cam_pos.y, _world_size.y)
-                    },
-                    Point{
-                            std::min(bottom_right.x, _world_size.x),
-                            std::min(bottom_right.y, _world_size.y)
-                    }
-            };
+            Point cam_pos = camera->position();
+            Point cam_size = camera->size();
+            Roi roi{cam_pos, cam_pos + cam_size};
             auto collisions = _render_detector.broad_check(roi);
             typename core::Camera::List list;
             for (const auto &id: collisions)
@@ -280,6 +373,9 @@ BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManage
 void BasicContext::evaluate(uint32_t time_elapsed)
 {
     world_manager().set_time_elapsed(time_elapsed);
+
+    world_manager().initialize_objects();
+
     Item event;
     // Process events
     while (events_pop(event))
@@ -291,7 +387,10 @@ void BasicContext::evaluate(uint32_t time_elapsed)
     // Check collisions
     process_collisions(world_manager().check_collisions());
 
-    // Act and update collision detectors
+    // Call evaluate
+    world_manager().evaluate_objects(time_elapsed);
+
+    // Call update and update collision detectors
     world_manager().update_objects();
 
     // Evaluate all available contexts
@@ -310,21 +409,24 @@ void BasicContext::evaluate(uint32_t time_elapsed)
     }
     // Update cameras
     world_manager().update_cameras();
+    // Remove objects
+    world_manager().check_dead_objects();
+    world_manager().remove_objects();
 }
 
 void BasicContext::process_collisions(BasicContext::Collisions pairs)
 {
-    for (const auto& [id1, id2]: pairs)
+    for (const auto&[id1, id2]: pairs)
     {
-        auto obj1 = dynamic_cast<helpers::context::CollidableObject*>(world_manager().get_object(id1));
-        auto obj2 = dynamic_cast<helpers::context::CollidableObject*>(world_manager().get_object(id2));
+        auto obj1 = dynamic_cast<basic::object::CollidableObject *>(world_manager().get_object(id1));
+        auto obj2 = dynamic_cast<basic::object::CollidableObject *>(world_manager().get_object(id2));
         if (obj1 != nullptr)
         {
-            obj1->collisions().push_back(obj2);
+            obj1->get_collisions().push_back(obj2);
         }
         if (obj2 != nullptr)
         {
-            obj2->collisions().push_back(obj1);
+            obj2->get_collisions().push_back(obj1);
         }
     }
 }
@@ -335,96 +437,6 @@ void BasicContext::process_event(const core::Event *event)
 
 void BasicContext::initialize()
 {
-}
-
-
-void CollidableObject::set_collision_size(const Size &size)
-{
-    set_changed(true);
-    _collision_size = size;
-}
-
-CollidableObject::Collisions &CollidableObject::collisions()
-{
-    return _collisions;
-}
-
-const Size &CollidableObject::collision_size() const
-{
-    return _collision_size;
-}
-
-ObjectManager *Object::object_manager()
-{
-    return _object_manager;
-}
-
-bool Object::dead() const
-{
-    return _dead;
-}
-
-void Object::set_dead()
-{
-    _dead = true;
-}
-
-void UpdatableObject::set_changed(bool changed)
-{
-    _changed = changed;
-}
-
-bool UpdatableObject::changed() const
-{
-    return _changed;
-}
-
-void GameObject::set_position(const Point &pos)
-{
-    set_changed(true);
-    core::behavior::Position::set_position(pos);
-}
-
-bool RenderableObject::update(bool force)
-{
-    if (force || changed())
-    {
-        if (drawable() != nullptr)
-        {
-            set_render_shape({drawable()->bounding_box().top_left + position(),
-                              drawable()->bounding_box().bottom_right + position()});
-        }
-        set_changed(false);
-        return true;
-    }
-    return false;
-}
-
-bool CollidableObject::update(bool force)
-{
-    if (force || changed())
-    {
-        collision_shape() = AABB(position(), position() + collision_size());
-        set_changed(false);
-        return true;
-    }
-    return false;
-}
-
-bool GameObject::update(bool force)
-{
-    if (force || changed())
-    {
-        CollidableObject::update(true);
-        RenderableObject::update(true);
-        return true;
-    }
-    return false;
-}
-
-bool GameObject::act(uint32_t time_elapsed)
-{
-    return false;
 }
 
 core::Context *ContextManager::create_context(const char *obj_file,

@@ -1,7 +1,7 @@
 #ifndef ENGINE_BASICACTORS_H
 #define ENGINE_BASICACTORS_H
 
-namespace core::actor::basic
+namespace core::basic::actor
 {
     class IActor
     {
@@ -12,7 +12,7 @@ namespace core::actor::basic
     class Evaluate: public virtual IActor
     {
     public:
-        virtual bool evaluate(uint32_t time_elapsed) = 0;
+        virtual void evaluate(uint32_t time_elapsed) = 0;
     };
 
     class Update: public virtual IActor

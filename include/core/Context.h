@@ -23,7 +23,7 @@ namespace core
     public:
         ScreenManager(const ScreenManager &) = delete;
         ScreenManager &operator=(const ScreenManager &) = delete;
-        Id create_screen(const Roi& roi, uint32_t z_order, const RGBA& base_color={0,0,0,0});
+        Id create_screen(const Roi& roi, int32_t z_order, const RGBA& base_color={0,0,0,0});
         void remove_screen(Id id);
         bool attach_camera(Camera* camera, Id screen);
         bool detach_camera(Camera* camera, Id screen);
@@ -80,7 +80,7 @@ namespace core
         std::map<Id, ContextInfo> _contexts;
     };
 
-    class Context : public behavior::UniqueId<Id>
+    class Context : public virtual basic::behavior::UniqueId<Id>
     {
         friend class EventManager;
 

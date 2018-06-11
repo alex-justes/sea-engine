@@ -6,7 +6,7 @@
 #include "core/Drawable.h"
 #include "helpers/Containers.hpp"
 
-namespace core::behavior::basic
+namespace core::basic::behavior
 {
     class IBehavior
     {
@@ -87,10 +87,10 @@ namespace core::behavior::basic
     class Z_Order: public virtual IBehavior
     {
     public:
-        uint32_t z_order() const;
-        void set_z_order(uint32_t z_order);
+        int32_t z_order() const;
+        void set_z_order(int32_t z_order);
     private:
-        uint32_t _z_order {0};
+        int32_t _z_order {0};
     };
 
     class Changed: public virtual IBehavior

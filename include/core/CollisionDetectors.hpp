@@ -11,7 +11,9 @@
 
 namespace core::collision_detector
 {
-    template<class T, template<class> class Behavior = core::behavior::CollisionShape>
+    using namespace core::basic::behavior;
+
+    template<class T, template<class> class Behavior = CollisionShape>
     class BroadAABBCollisionDetector
     {
     public:
@@ -38,10 +40,10 @@ namespace core::collision_detector
     protected:
         static const AABB &get_shape(const T &object)
         {
-            if constexpr (std::is_same_v<behavior_type, core::behavior::CollisionShape<AABB>>)
+            if constexpr (std::is_same_v<behavior_type, CollisionShape<AABB>>)
             {
                 return object.collision_shape();
-            } else if constexpr (std::is_same_v<behavior_type, core::behavior::RenderShape<AABB>>)
+            } else if constexpr (std::is_same_v<behavior_type, RenderShape<AABB>>)
             {
                 return object.render_shape();
             }
@@ -60,14 +62,14 @@ namespace core::collision_detector
     template<class T, template<class> class Behavior>
     constexpr bool BroadAABBCollisionDetector<T, Behavior>::check_traits()
     {
-        constexpr bool has_collision_shape = std::is_base_of_v<core::behavior::CollisionShape<AABB>, behavior_type> ||
-                                             std::is_base_of_v<core::behavior::RenderShape<AABB>, behavior_type>;
-        constexpr bool has_unique_id = std::is_base_of_v<core::behavior::IUniqueId, T>;
+        constexpr bool has_collision_shape = std::is_base_of_v<CollisionShape<AABB>, behavior_type> ||
+                                             std::is_base_of_v<RenderShape<AABB>, behavior_type>;
+        constexpr bool has_unique_id = std::is_base_of_v<IUniqueId, T>;
         return has_collision_shape && has_unique_id;
     }
 
 
-    template<class T, template<class> class Behavior = core::behavior::CollisionShape>
+    template<class T, template<class> class Behavior = CollisionShape>
     class HierarchicalSpatialGrid : public BroadAABBCollisionDetector<T, Behavior>
     {
     public:
@@ -87,7 +89,7 @@ namespace core::collision_detector
         SingleCollisions broad_check(const Point &pt) override;
         void update(const T &object) override;
         void update(Id id) override;
-        SingleCollisions broad_check(const Rect &rc) override;
+        SingleCollisions broad_check(const Rect &roi) override;
         PairCollisions broad_check() override;
 
         void set_world_size(const Size &size);
@@ -272,14 +274,14 @@ namespace core::collision_detector
 
     template<class T, template<class> class Behavior>
     typename HierarchicalSpatialGrid<T, Behavior>::SingleCollisions
-    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Rect &rc)
+    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Roi &roi)
     {
         SingleCollisions collisions;
         Rect fixed_rc = {
-                std::clamp(rc.top_left.y, (uint32_t) 0, _world_size.y),
-                std::clamp(rc.top_left.x, (uint32_t) 0, _world_size.x),
-                std::clamp(rc.bottom_right.y, (uint32_t) 0, _world_size.y),
-                std::clamp(rc.bottom_right.x, (uint32_t) 0, _world_size.x)
+                std::clamp(roi.top_left.y, (uint32_t) 0, _world_size.y),
+                std::clamp(roi.top_left.x, (uint32_t) 0, _world_size.x),
+                std::clamp(roi.bottom_right.y, (uint32_t) 0, _world_size.y),
+                std::clamp(roi.bottom_right.x, (uint32_t) 0, _world_size.x)
         };
         for (const auto &l: _grid_map)
         {
