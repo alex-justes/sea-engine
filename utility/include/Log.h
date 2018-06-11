@@ -14,7 +14,7 @@
 #define LOG_W(...) LOG(STATUS_WARNING, __VA_ARGS__);
 
 #ifndef NDEBUG
-#define MAX_MESSAGE_LENGTH 512
+#define MAX_MESSAGE_LENGTH 1024
 #define LOG_D(fmt, ...) LOG(STATUS_DEBUG, "<%s: %d> " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
 #else
 #define MAX_MESSAGE_LENGTH 256

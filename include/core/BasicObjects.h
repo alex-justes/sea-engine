@@ -46,6 +46,7 @@ namespace core::basic::object
     public:
         using Collisions = std::list<const CollidableObject*>;
         const Collisions& collisions() const;
+        void clear_collisions();
     private:
         Collisions& get_collisions();
     private:

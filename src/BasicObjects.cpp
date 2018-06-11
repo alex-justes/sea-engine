@@ -17,6 +17,11 @@ const CollidableObject::Collisions& CollidableObject::collisions() const
     return _collisions;
 }
 
+void CollidableObject::clear_collisions()
+{
+    _collisions.clear();
+}
+
 CollidableObject::Collisions& CollidableObject::get_collisions()
 {
     return _collisions;

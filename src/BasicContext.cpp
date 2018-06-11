@@ -218,68 +218,6 @@ void WorldManager::check_dead_objects()
     }
 }
 
-/*void WorldManager::update_objects()
-{
-    for (auto &item: _object_manager)
-    {
-        Object *object = item.second.get();
-        if (object->dead())
-        {
-            continue;
-        }
-        bool changed_in_action = false;
-        auto actor = dynamic_cast<core::actor::Actor *>(object);
-        if (actor != nullptr)
-        {
-            //LOG_D("Act: %d", object->unique_id())
-            changed_in_action = actor->act(_time_elapsed);
-        }
-        bool updated = false;
-        auto updatable = dynamic_cast<core::behavior::Updatable *>(object);
-        if (updatable != nullptr)
-        {
-            // LOG_D("Update: %d", object->unique_id())
-            updated = updatable->update(false);
-        }
-        if (changed_in_action || updated)
-        {
-            // LOG_D("Update collision detectors for %d", object->unique_id())
-            auto object_with_pos = dynamic_cast<core::behavior::Position *>(object);
-            if (object_with_pos != nullptr)
-            {
-                auto &pos = object_with_pos->position();
-                if (pos.x >= _world_size.x || pos.y >= _world_size.y)
-                {
-                    LOG_W("Mr. Anderson tried to escape matrix (unsuccessfully)...")
-                    object->set_dead();
-                    continue;
-                }
-            }
-            _collision_detector.update(object->unique_id());
-            _render_detector.update(object->unique_id());
-        }
-
-        auto collidable = dynamic_cast<CollidableObject *>(object);
-        if (collidable != nullptr)
-        {
-            collidable->collisions().clear();
-        }
-    }
-    for (auto &item: _object_manager)
-    {
-        Object* object = item.second.get();
-        if (object->dead())
-        {
-            remove_object(object->unique_id());
-        }
-    }
-    for (auto &object: _initialization_list)
-    {
-        add_object(object);
-    }
-    _initialization_list.clear();
-}*/
-
 void WorldManager::initialize_objects()
 {
     if (_initialization_list.empty())
@@ -373,26 +311,25 @@ BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManage
 void BasicContext::evaluate(uint32_t time_elapsed)
 {
     world_manager().set_time_elapsed(time_elapsed);
-
     world_manager().initialize_objects();
-
     Item event;
     // Process events
     while (events_pop(event))
     {
         process_event(event.get());
     }
-
     // TODO: check copy elision
     // Check collisions
     process_collisions(world_manager().check_collisions());
-
     // Call evaluate
     world_manager().evaluate_objects(time_elapsed);
-
     // Call update and update collision detectors
     world_manager().update_objects();
-
+    // Remove objects
+    world_manager().check_dead_objects();
+    world_manager().remove_objects();
+    // Update cameras
+    world_manager().update_cameras();
     // Evaluate all available contexts
     for (auto &item: _context_manager)
     {
@@ -407,11 +344,6 @@ void BasicContext::evaluate(uint32_t time_elapsed)
             context->evaluate(time_elapsed);
         }
     }
-    // Update cameras
-    world_manager().update_cameras();
-    // Remove objects
-    world_manager().check_dead_objects();
-    world_manager().remove_objects();
 }
 
 void BasicContext::process_collisions(BasicContext::Collisions pairs)

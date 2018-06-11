@@ -21,9 +21,9 @@ void Z_Order::set_z_order(int32_t z_order)
     _z_order = z_order;
 }
 
-void Changed::set_changed()
+void Changed::set_changed(bool changed)
 {
-    _changed = true;
+    _changed = changed;
 }
 
 bool Changed::changed() const

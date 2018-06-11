@@ -97,7 +97,7 @@ namespace core::basic::behavior
     {
     public:
         bool changed() const;
-        void set_changed();
+        void set_changed(bool changed);
     private:
         bool _changed {false};
     };
