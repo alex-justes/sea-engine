@@ -169,11 +169,11 @@ namespace helpers::containers
         // intersection
         friend bool operator&&(const Rect2D& lhs, const Rect2D& rhs)
         {
-            if (lhs.bottom_right.x <= rhs.top_left.x || rhs.bottom_right.x <= lhs.top_left.x)
+            if (lhs.bottom_right.x < rhs.top_left.x || rhs.bottom_right.x < lhs.top_left.x)
             {
                 return false;
             }
-            if (lhs.bottom_right.y <= rhs.top_left.y || rhs.bottom_right.y <= lhs.top_left.y)
+            if (lhs.bottom_right.y < rhs.top_left.y || rhs.bottom_right.y < lhs.top_left.y)
             {
                 return false;
             }

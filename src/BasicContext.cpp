@@ -77,6 +77,13 @@ const Size &WorldManager::world_size() const
     return _world_size;
 }
 
+void WorldManager::add_to_creation_queue(helpers::context::Object *object)
+{
+
+    LOG_D("Added %d to creation queue", object->unique_id())
+    _objects_to_add.push_back(object);
+}
+
 void WorldManager::add_object(helpers::context::Object *object)
 {
     LOG_D("Added %d to the world.", object->unique_id())
@@ -174,6 +181,11 @@ void WorldManager::update_objects()
             remove_object(object->unique_id());
         }
     }
+    for (auto &object: _objects_to_add)
+    {
+        add_object(object);
+    }
+    _objects_to_add.clear();
 }
 
 WorldManager &BasicContext::world_manager()

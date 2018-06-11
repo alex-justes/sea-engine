@@ -136,7 +136,9 @@ namespace helpers::context
         void set_time_elapsed(uint32_t time_elapsed);
     protected:
         void add_object(Object *object);
+        void add_to_creation_queue(Object *object);
     private:
+        std::list<Object *> _objects_to_add;
         CollisionDetector _collision_detector;
         RenderDetector _render_detector;
         core::CameraManager _camera_manager;
@@ -203,7 +205,7 @@ namespace helpers::context
     T *WorldManager::create_object(Types &&... args)
     {
         auto ptr = _object_manager.create<T>(std::forward<Types>(args)...);
-        add_object(ptr);
+        add_to_creation_queue(ptr);
         return ptr;
     }
 }
