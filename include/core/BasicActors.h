@@ -18,7 +18,7 @@ namespace core::actor::basic
     class Update: public virtual IActor
     {
     public:
-        virtual bool update() = 0;
+        virtual bool update(bool force) = 0;
     };
 
     class Initialize: public virtual IActor

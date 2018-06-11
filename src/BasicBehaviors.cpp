@@ -31,3 +31,12 @@ bool Changed::changed() const
     return _changed;
 }
 
+void Dead::set_dead()
+{
+    _dead = true;
+}
+
+bool Dead::dead() const
+{
+    return _dead;
+}

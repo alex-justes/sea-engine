@@ -49,6 +49,7 @@ target_sources(engine PRIVATE
         include/core/CollisionDetectors.hpp
         include/core/BasicBehaviors.hpp
         include/core/BasicObjects.h
+        src/BasicObjects.cpp
         include/core/ComplexBehaviors.hpp
         src/ComplexBehaviors.cpp
         src/BasicBehaviors.cpp
@@ -58,7 +59,7 @@ target_sources(engine PRIVATE
         include/core/BasicActors.h
         include/core/ComplexActors.h
         src/Engine.cpp
-        include/helpers/BasicContext.h
+        include/helpers/BasicContext.hpp
         src/BasicContext.cpp
         include/core/Types.h
         )

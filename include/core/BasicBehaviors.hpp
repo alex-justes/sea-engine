@@ -50,6 +50,18 @@ namespace core::behavior::basic
         collision_shape_type _collision_shape;
     };
 
+    template <class T>
+    class CollisionSize : public virtual IBehavior
+    {
+    public:
+        const T& collision_size() const
+        { return _size; }
+        void set_collision_size(const T& size)
+        { _size = size; }
+    private:
+        T _size;
+    };
+
     template<class Shape>
     class RenderShape: public virtual IBehavior
     {
@@ -90,11 +102,13 @@ namespace core::behavior::basic
         bool _changed {false};
     };
 
-
-    class Updatable: public virtual IBehavior
+    class Dead: public virtual IBehavior
     {
     public:
-        virtual bool update(bool force) = 0;
+        bool dead() const;
+        void set_dead();
+    private:
+        bool _dead {false};
     };
 
 }

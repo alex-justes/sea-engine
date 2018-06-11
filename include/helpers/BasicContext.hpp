@@ -4,66 +4,13 @@
 #include "core/Types.h"
 #include "core/Context.h"
 #include "core/CollisionDetectors.hpp"
-#include "core/BasicActors.h"
+#include "core/BasicObjects.h"
 #include "core/Camera.h"
 
 namespace helpers::context
 {
-    class ObjectManager;
-    class WorldManager;
-
-
-
-    class UpdatableObject :
-            public virtual Object,
-            public core::behavior::Updatable
-    {
-    public:
-        void set_changed(bool changed);
-        bool changed() const;
-    private:
-        bool _changed{true};
-    };
-
-    class CollidableObject :
-            public virtual Object,
-            public virtual UpdatableObject,
-            public virtual core::behavior::Position,
-            public core::behavior::CollisionShape<AABB>
-    {
-    public:
-        using Collisions = std::list<const Object*>;
-        void set_collision_size(const Size &size);
-        const Size &collision_size() const;
-        virtual ~CollidableObject() = default;
-        Collisions& collisions();
-        virtual bool update(bool force) override;
-    private:
-        Size _collision_size{0, 0};
-        Collisions _collisions;
-    };
-
-    class RenderableObject :
-            public virtual Object,
-            public virtual UpdatableObject,
-            public core::behavior::Renderable
-    {
-    public:
-        virtual bool update(bool force=false) override;
-        virtual ~RenderableObject() = default;
-    };
-
-    class GameObject :
-            public CollidableObject,
-            public RenderableObject,
-            public core::actor::Actor
-    {
-    public:
-        void set_position(const Point &pos) override;
-        virtual bool update(bool force) override;
-        virtual bool act(uint32_t time_elapsed) override;
-        virtual ~GameObject() = default;
-    };
+    using namespace core;
+    using Object = object::basic::Object;
 
     class WorldManager;
 
@@ -99,8 +46,8 @@ namespace helpers::context
         using Objects = std::map<Id, Item>;
         template<class T, template<class> class Behavior>
         using BroadCollisionDetector = typename core::collision_detector::HierarchicalSpatialGrid<T, Behavior>;
-        using CollisionDetector = BroadCollisionDetector<CollidableObject, core::behavior::CollisionShape>;
-        using RenderDetector = BroadCollisionDetector<RenderableObject, core::behavior::RenderShape>;
+        using CollisionDetector = BroadCollisionDetector<object::basic::CollidableObject, behavior::basic::CollisionShape>;
+        using RenderDetector = BroadCollisionDetector<object::basic::RenderableObject, behavior::basic::RenderShape>;
     public:
         using Collisions = CollisionDetector::PairCollisions;
         explicit WorldManager(core::ScreenManager &screen_manager);
