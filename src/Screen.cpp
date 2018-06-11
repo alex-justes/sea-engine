@@ -97,7 +97,7 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
         auto rect = dynamic_cast<const drawable::DrawableRect *>(single);
         if (rect != nullptr)
         {
-            SDL_Rect fill_rect = {position.x, position.y, (int32_t)rect->size().x, (int32_t)rect->size().y};
+            SDL_Rect fill_rect = {position.x, position.y, (int32_t)rect->box_size().x, (int32_t)rect->box_size().y};
             const auto& fill_color = rect->fill_color();
             SDL_SetRenderDrawColor(_renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
             SDL_RenderFillRect(_renderer, &fill_rect);

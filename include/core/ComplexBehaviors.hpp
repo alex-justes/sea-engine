@@ -2,6 +2,7 @@
 #define ENGINE_COMPLEXBEHAVIORS_HPP
 
 #include "core/BasicBehaviors.hpp"
+#include "core/Drawable.h"
 
 namespace core::complex::behavior
 {

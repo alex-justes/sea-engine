@@ -3,7 +3,6 @@
 
 #include "core/Types.h"
 #include "UniqueIdGenerator.hpp"
-#include "core/Drawable.h"
 #include "helpers/Containers.hpp"
 
 namespace core::basic::behavior
@@ -109,6 +108,33 @@ namespace core::basic::behavior
         void set_dead();
     private:
         bool _dead {false};
+    };
+
+    class BoxSize: public virtual IBehavior
+    {
+    public:
+        const Size& box_size() const;
+        void set_box_size(const Size& size);
+    private:
+        Size _size;
+    };
+
+    class FillColor: public virtual IBehavior
+    {
+    public:
+        const RGBA& fill_color() const;
+        void set_fill_color(const RGBA& color);
+    private:
+        RGBA _color;
+    };
+
+    class BorderColor: public virtual IBehavior
+    {
+    public:
+        const RGBA& border_color() const;
+        void set_border_color(const RGBA& color);
+    private:
+        RGBA _color;
     };
 
 }

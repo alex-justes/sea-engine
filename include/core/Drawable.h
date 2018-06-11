@@ -4,12 +4,11 @@
 #include <memory>
 #include <list>
 #include "helpers/Containers.hpp"
+#include "core/BasicBehaviors.hpp"
 #include "core/Types.h"
 
 namespace core::drawable
 {
-
-
     class Drawable
     {
     public:
@@ -18,32 +17,26 @@ namespace core::drawable
         virtual AABB bounding_box() const = 0;
     };
 
-    class SingleDrawable: public Drawable
+    class SingleDrawable : public Drawable
     {
     };
 
-    class CompoundDrawable: public Drawable
+    class CompoundDrawable : public Drawable
     {
     public:
-        std::list<const Drawable*> get_drawables() const;
+        std::list<const Drawable *> get_drawables() const;
     private:
 
     };
 
-    class DrawableRect: public SingleDrawable
+    class DrawableRect :
+            public SingleDrawable,
+            public virtual core::basic::behavior::BoxSize,
+            public virtual core::basic::behavior::FillColor,
+            public virtual core::basic::behavior::BorderColor
     {
     public:
-        const Size& size() const;
-        const RGBA& fill_color() const;
-        const RGBA& border_color() const;
-        Size& size();
-        RGBA& fill_color();
-        RGBA& border_color();
-        virtual AABB bounding_box() const override;
-    private:
-        Size _size;
-        RGBA _fill_color;
-        RGBA _border_color;
+        AABB bounding_box() const override;
     };
 
 };

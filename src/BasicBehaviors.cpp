@@ -40,3 +40,35 @@ bool Dead::dead() const
 {
     return _dead;
 }
+
+const Size& BoxSize::box_size() const
+{
+    return _size;
+}
+
+void BoxSize::set_box_size(const Size &size)
+{
+    _size = size;
+}
+
+const RGBA& FillColor::fill_color() const
+{
+    return _color;
+}
+
+void FillColor::set_fill_color(const RGBA &color)
+{
+    _color = color;
+}
+
+const RGBA& BorderColor::border_color() const
+{
+    return _color;
+}
+
+void BorderColor::set_border_color(const RGBA &color)
+{
+    _color = color;
+}
+
+
