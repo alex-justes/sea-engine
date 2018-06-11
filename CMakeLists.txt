@@ -48,11 +48,15 @@ target_sources(engine PRIVATE
         src/Configuration.cpp
         include/core/CollisionDetectors.hpp
         include/core/BasicBehaviors.hpp
+        include/core/BasicObjects.h
+        include/core/ComplexBehaviors.hpp
+        src/ComplexBehaviors.cpp
         src/BasicBehaviors.cpp
         include/helpers/Storage.hpp
         include/helpers/Containers.hpp
         include/core/Engine.h
         include/core/BasicActors.h
+        include/core/ComplexActors.h
         src/Engine.cpp
         include/helpers/BasicContext.h
         src/BasicContext.cpp

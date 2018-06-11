@@ -1,6 +1,6 @@
 #include "core/BasicBehaviors.hpp"
 
-using namespace core::behavior;
+using namespace core::behavior::basic;
 
 const Point &Position::position() const
 {
@@ -11,17 +11,23 @@ void Position::set_position(const Point& position)
 {
     _position = position;
 }
-uint32_t Renderable::z_order() const
+uint32_t Z_Order::z_order() const
 {
     return _z_order;
 }
 
-const Renderable::Drawable *Renderable::drawable() const
+void Z_Order::set_z_order(uint32_t z_order)
 {
-    return _drawable.get();
+    _z_order = z_order;
 }
 
-Renderable::Drawable *Renderable::drawable()
+void Changed::set_changed()
 {
-    return _drawable.get();
+    _changed = true;
 }
+
+bool Changed::changed() const
+{
+    return _changed;
+}
+

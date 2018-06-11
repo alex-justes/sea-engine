@@ -6,7 +6,7 @@
 #include "core/Drawable.h"
 #include "helpers/Containers.hpp"
 
-namespace core::behavior
+namespace core::behavior::basic
 {
     class IBehavior
     {
@@ -44,9 +44,8 @@ namespace core::behavior
         using collision_shape_type = Shape;
         const collision_shape_type &collision_shape() const
         { return _collision_shape; }
-    protected:
-        collision_shape_type &collision_shape()
-        { return _collision_shape; }
+        void set_collision_shape(const Shape& shape)
+        { _collision_shape = shape; }
     private:
         collision_shape_type _collision_shape;
     };
@@ -73,38 +72,30 @@ namespace core::behavior
         Point _position;
     };
 
-    class Renderable:
-            public RenderShape<helpers::containers::AABB>,
-            public virtual Position
+    class Z_Order: public virtual IBehavior
     {
     public:
-        using Drawable = core::drawable::Drawable;
         uint32_t z_order() const;
-        const Drawable *drawable() const;
-        template <class T, class ... Types>
-        T* set_drawable(Types &&... args);
-    protected:
-        Drawable *drawable();
+        void set_z_order(uint32_t z_order);
     private:
         uint32_t _z_order {0};
-        std::unique_ptr<Drawable> _drawable;
     };
+
+    class Changed: public virtual IBehavior
+    {
+    public:
+        bool changed() const;
+        void set_changed();
+    private:
+        bool _changed {false};
+    };
+
 
     class Updatable: public virtual IBehavior
     {
     public:
         virtual bool update(bool force) = 0;
     };
-
-    // ===============================================
-    template<class T, class... Types>
-    T *Renderable::set_drawable(Types &&... args)
-    {
-        static_assert(std::is_base_of_v<Drawable , T>, "T should be derived from Drawable");
-        auto ptr = new T(std::forward<Types>(args)...);
-        _drawable.reset(ptr);
-        return ptr;
-    }
 
 }
 
