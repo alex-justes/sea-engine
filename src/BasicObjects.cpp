@@ -2,14 +2,14 @@
 
 using namespace core::basic::object;
 
-ObjectManager* Object::object_manager()
+helpers::context::WorldManager* Object::world_manager()
 {
-    return _object_manager;
+    return _world_manager;
 }
 
-void Object::set_object_manager(ObjectManager *manager)
+void Object::set_world_manager(helpers::context::WorldManager *manager)
 {
-    _object_manager = manager;
+    _world_manager = manager;
 }
 
 const CollidableObject::Collisions& CollidableObject::collisions() const

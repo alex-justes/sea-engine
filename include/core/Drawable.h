@@ -36,6 +36,8 @@ namespace core::drawable
             public virtual core::basic::behavior::BorderColor
     {
     public:
+        DrawableRect() = default;
+        DrawableRect(const Size& box_size, const RGBA& fill_color, const RGBA& border_color);
         AABB bounding_box() const override;
     };
 

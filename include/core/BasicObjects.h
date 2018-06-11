@@ -4,37 +4,39 @@
 #include "core/BasicBehaviors.hpp"
 #include "core/ComplexBehaviors.hpp"
 #include "core/BasicActors.h"
+#include "core/Types.h"
 
 namespace core::basic::object
 {
     using namespace core;
-    using ObjectManager = helpers::context::ObjectManager;
 
     class Object :
             public virtual basic::behavior::UniqueId<Id>,
             public virtual basic::behavior::Dead
     {
-        friend class helpers::context::ObjectManager;
+        friend class helpers::context::WorldManager;
     public:
         virtual ~Object() = default;
     protected:
         Object() = default;
-        ObjectManager* object_manager();
-        void set_object_manager(ObjectManager* manager);
+        helpers::context::WorldManager *world_manager();
     private:
-        ObjectManager* _object_manager {nullptr};
+        void set_world_manager(helpers::context::WorldManager *manager);
+        helpers::context::WorldManager *_world_manager{nullptr};
     };
 
     class InitializableObject :
             public virtual Object,
             public basic::actor::Initialize
-    { };
+    {
+    };
 
     class UpdatableObject :
             public virtual Object,
             public virtual basic::behavior::Changed,
             public basic::actor::Update
-    { };
+    {
+    };
 
     class CollidableObject :
             public virtual InitializableObject,
@@ -43,20 +45,22 @@ namespace core::basic::object
             public virtual basic::behavior::CollisionSize<Size>
     {
         friend class helpers::context::BasicContext;
+
     public:
-        using Collisions = std::list<const CollidableObject*>;
-        const Collisions& collisions() const;
+        using Collisions = std::list<const CollidableObject *>;
+        const Collisions &collisions() const;
         void clear_collisions();
     private:
-        Collisions& get_collisions();
+        Collisions &get_collisions();
     private:
         Collisions _collisions;
     };
 
-    class RenderableObject:
+    class RenderableObject :
             public virtual InitializableObject,
             public virtual complex::behavior::Renderable
-    { };
+    {
+    };
 
 
 }

@@ -12,7 +12,6 @@ namespace helpers::context
     using namespace core;
     using Object = basic::object::Object;
 
-    class WorldManager;
 
     class ObjectManager
     {
@@ -142,7 +141,6 @@ namespace helpers::context
     {
         static_assert(std::is_base_of_v<Object, T>, "T should be derived from Object");
         auto ptr = new T(std::forward<Types>(args)...);
-        ptr->_object_manager = this;
         auto item = Item(ptr);
         _objects.emplace(item->unique_id(), std::move(item));
         return ptr;
@@ -152,6 +150,7 @@ namespace helpers::context
     T *WorldManager::create_object(Types &&... args)
     {
         auto ptr = _object_manager.create<T>(std::forward<Types>(args)...);
+        ptr->set_world_manager(this);
         if constexpr (std::is_base_of_v<basic::actor::Initialize, T>)
         {
             LOG_D("Added %d to initialization list", ptr->unique_id())

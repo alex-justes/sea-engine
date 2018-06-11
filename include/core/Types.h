@@ -23,6 +23,7 @@ struct RGBA
 namespace helpers::context
 {
     class ObjectManager;
+    class WorldManager;
     class BasicContext;
 }
 
