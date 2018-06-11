@@ -26,6 +26,12 @@ namespace helpers::containers
             return *this;
         }
 
+        template <typename ValueType>
+        operator Vector2D<ValueType>() const
+        {
+            return Vector2D<ValueType>(x, y);
+        }
+
         Vector2D(Vector2D&& pt) noexcept { *this = std::move(pt); }
         Vector2D& operator=(Vector2D&& pt) noexcept
         {

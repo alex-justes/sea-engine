@@ -159,6 +159,7 @@ void WorldManager::update_objects()
                 auto &pos = object_with_pos->position();
                 if (pos.x >= _world_size.x || pos.y >= _world_size.y)
                 {
+                    LOG_W("Mr. Anderson tried to escape matrix (unsuccessfully)...")
                     object->set_dead();
                     continue;
                 }
