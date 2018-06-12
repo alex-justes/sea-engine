@@ -313,6 +313,10 @@ namespace core::collision_detector
         for (const auto &item: _objects)
         {
             const auto&[id, object_info] = item;
+            if (object_info.object->is_static_shape())
+            {
+                continue;
+            }
             auto single_collisions = broad_check(this->get_shape(*object_info.object));
             single_collisions.erase(id);
             for (const auto &collision: single_collisions)

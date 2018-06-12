@@ -36,8 +36,19 @@ namespace core::basic::behavior
         const unique_id_type _unique_id;
     };
 
+    class StaticShape : public virtual IBehavior
+    {
+    public:
+        bool is_static_shape() const;
+        void set_static_shape(bool static_shape);
+    private:
+        bool _static{false};
+    };
+
     template<class Shape>
-    class CollisionShape : public virtual IBehavior
+    class CollisionShape :
+            public virtual IBehavior,
+            public virtual StaticShape
     {
     public:
         using collision_shape_type = Shape;
@@ -62,7 +73,9 @@ namespace core::basic::behavior
     };
 
     template<class Shape>
-    class RenderShape: public virtual IBehavior
+    class RenderShape:
+            public virtual IBehavior,
+            public virtual StaticShape
     {
     public:
         using render_shape_type = Shape;

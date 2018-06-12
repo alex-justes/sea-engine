@@ -71,4 +71,12 @@ void BorderColor::set_border_color(const RGBA &color)
     _color = color;
 }
 
+bool StaticShape::is_static_shape() const
+{
+    return _static;
+}
 
+void StaticShape::set_static_shape(bool static_shape)
+{
+    _static = static_shape;
+}
