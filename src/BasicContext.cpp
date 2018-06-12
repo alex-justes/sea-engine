@@ -162,6 +162,17 @@ void WorldManager::evaluate_objects(uint32_t time_elapsed)
         actor->evaluate(time_elapsed);
     }
 }
+void WorldManager::clear_collisions()
+{
+    for (auto&[id, object]: _object_manager)
+    {
+        auto collidable = dynamic_cast<basic::object::CollidableObject*>(object.get());
+        if (collidable != nullptr)
+        {
+            collidable->clear_collisions();
+        }
+    }
+}
 
 void WorldManager::update_objects()
 {
@@ -215,6 +226,11 @@ void WorldManager::check_dead_objects()
     {
         if (object->dead())
         {
+            auto die = dynamic_cast<basic::actor::Die *>(object.get());
+            if (die != nullptr)
+            {
+                die->die();
+            }
             remove_object(object->unique_id());
         }
     }
@@ -330,9 +346,12 @@ void BasicContext::evaluate(uint32_t time_elapsed)
     // Remove objects
     world_manager().check_dead_objects();
     world_manager().remove_objects();
+    // Clear collisions
+    world_manager().clear_collisions();
     // Update cameras
     world_manager().update_cameras();
     // Evaluate all available contexts
+    /*
     for (auto &item: _context_manager)
     {
         auto &context = item.second;
@@ -345,7 +364,7 @@ void BasicContext::evaluate(uint32_t time_elapsed)
             }
             context->evaluate(time_elapsed);
         }
-    }
+    }*/
 }
 
 void BasicContext::process_collisions(BasicContext::Collisions pairs)
@@ -354,11 +373,11 @@ void BasicContext::process_collisions(BasicContext::Collisions pairs)
     {
         auto obj1 = dynamic_cast<basic::object::CollidableObject *>(world_manager().get_object(id1));
         auto obj2 = dynamic_cast<basic::object::CollidableObject *>(world_manager().get_object(id2));
-        if (obj1 != nullptr)
+        if (obj1 != nullptr && !obj1->is_static_shape())
         {
             obj1->get_collisions().push_back(obj2);
         }
-        if (obj2 != nullptr)
+        if (obj2 != nullptr && !obj2->is_static_shape())
         {
             obj2->get_collisions().push_back(obj1);
         }

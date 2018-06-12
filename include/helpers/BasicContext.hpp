@@ -61,6 +61,7 @@ namespace helpers::context
         void initialize_objects();
         void evaluate_objects(uint32_t time_elapsed);
         void update_objects();
+        void clear_collisions();
         void update_cameras();
         void check_dead_objects();
         void remove_objects();

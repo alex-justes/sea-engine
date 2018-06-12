@@ -33,6 +33,12 @@ namespace core::basic::actor
         virtual void fade(float percent) = 0;
     };
 
+    class Die: public virtual IActor
+    {
+    public:
+        virtual void die() = 0;
+    };
+
 }
 
 #endif //ENGINE_BASICACTORS_H

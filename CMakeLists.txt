@@ -13,6 +13,7 @@ target_compile_features(
 add_subdirectory(utility)
 
 find_package(SDL2 REQUIRED)
+#find_package(SDL_ttf REQUIRED)
 
 target_link_libraries(
         engine
