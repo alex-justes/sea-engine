@@ -31,7 +31,7 @@ namespace core
         bool detach_camera(Camera* camera, Id screen);
         bool detach_camera(Camera* camera);
         const Size& screen_size() const;
-        const Screen* find_screen(const Point& point);
+        const Screen* find_screen(const Point& point) const;
     private:
         using Map = std::map<Id, std::unique_ptr<Screen>>;
         using const_iterator =  typename Map::const_iterator;
@@ -62,7 +62,7 @@ namespace core
         void subscribe(Context* context, EventType t);
         void unsubscribe(Context* context, EventType t);
         void unsubscribe(Context* context);
-        void push(Item event);
+        void dispatch(Item event);
     private:
         using Subscription = std::map<Id, Context*>;
         std::map<EventType, Subscription> _map;

@@ -79,7 +79,7 @@ const Size& ScreenManager::screen_size() const
     return _screen_size;
 }
 
-const Screen *ScreenManager::find_screen(const Point &point)
+const Screen *ScreenManager::find_screen(const Point &point) const
 {
     auto screens = _detector.broad_check(point);
     if (screens.empty())
@@ -87,7 +87,8 @@ const Screen *ScreenManager::find_screen(const Point &point)
         return nullptr;
     }
     auto id = *(--screens.end());
-    return _screens[id].get();
+    auto screen = _screens.find(id);
+    return screen->second.get();
 }
 
 void ScreenManager::set_screen_size(const Size &size)
@@ -200,7 +201,7 @@ void EventManager::unsubscribe(Context *context)
     }
 }
 
-void EventManager::push(Item event)
+void EventManager::dispatch(Item event)
 {
     if (_map.count(event->type()) == 0)
     {

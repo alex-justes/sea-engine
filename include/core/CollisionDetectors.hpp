@@ -31,9 +31,9 @@ namespace core::collision_detector
         virtual void remove(Id id) = 0;
         virtual void update(const T &object) = 0;
         virtual void update(Id id) = 0;
-        virtual SingleCollisions broad_check(const Point &pt) = 0;
-        virtual SingleCollisions broad_check(const Rect &rc) = 0;
-        virtual PairCollisions broad_check() = 0;
+        virtual SingleCollisions broad_check(const Point &pt) const = 0;
+        virtual SingleCollisions broad_check(const Rect &rc) const = 0;
+        virtual PairCollisions broad_check() const = 0;
 
         virtual ~BroadAABBCollisionDetector() = default;
 
@@ -86,11 +86,11 @@ namespace core::collision_detector
         void add(const T &object) override;
         void remove(const T &object) override;
         void remove(Id id) override;
-        SingleCollisions broad_check(const Point &pt) override;
+        SingleCollisions broad_check(const Point &pt) const override;
         void update(const T &object) override;
         void update(Id id) override;
-        SingleCollisions broad_check(const Rect &roi) override;
-        PairCollisions broad_check() override;
+        SingleCollisions broad_check(const Rect &roi) const override;
+        PairCollisions broad_check() const override;
 
         void set_world_size(const Size &size);
 
@@ -247,7 +247,7 @@ namespace core::collision_detector
     }
     template<class T, template<class> class Behavior>
     typename HierarchicalSpatialGrid<T, Behavior>::SingleCollisions
-    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Point &pt)
+    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Point &pt) const
     {
         SingleCollisions collisions;
         Point fixed_pt = {
@@ -260,7 +260,8 @@ namespace core::collision_detector
             auto cell = calc_cell(level, pt);
             for (const auto &o: grid[cell.y][cell.x])
             {
-                auto shape = this->get_shape(*_objects[o].object);
+                auto object = _objects.find(o);
+                auto shape = this->get_shape(*(object->second.object));
                 if (pt.x < shape.bottom_right.x && pt.x > shape.top_left.x
                     &&
                     pt.y < shape.bottom_right.y && pt.y > shape.top_left.y)
@@ -274,7 +275,7 @@ namespace core::collision_detector
 
     template<class T, template<class> class Behavior>
     typename HierarchicalSpatialGrid<T, Behavior>::SingleCollisions
-    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Roi &roi)
+    HierarchicalSpatialGrid<T, Behavior>::broad_check(const Roi &roi) const
     {
         SingleCollisions collisions;
         Rect fixed_rc = {
@@ -293,7 +294,8 @@ namespace core::collision_detector
                 {
                     for (const auto &o: grid[y][x])
                     {
-                        if (fixed_rc && this->get_shape(*_objects[o].object))
+                        auto object = _objects.find(o);
+                        if (fixed_rc && this->get_shape(*(object->second.object)))
                         {
                             collisions.insert(o);
                         }
@@ -305,7 +307,7 @@ namespace core::collision_detector
     }
 
     template<class T, template<class> class Behavior>
-    typename HierarchicalSpatialGrid<T, Behavior>::PairCollisions HierarchicalSpatialGrid<T, Behavior>::broad_check()
+    typename HierarchicalSpatialGrid<T, Behavior>::PairCollisions HierarchicalSpatialGrid<T, Behavior>::broad_check() const
     {
         PairCollisions collisions;
         for (const auto &item: _objects)

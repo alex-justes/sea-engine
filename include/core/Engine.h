@@ -20,6 +20,8 @@ namespace core
     private:
         bool create_window();
         bool create_renderer();
+        std::shared_ptr<Event> parse_event(const SDL_Event &sdl_event, const ScreenManager &screen_manager);
+        std::shared_ptr<Event> parse_mouse_event(const SDL_Event &sdl_event, const ScreenManager &screen_manager);
         bool _running{false};
         struct Configuration
         {

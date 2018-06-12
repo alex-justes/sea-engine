@@ -77,6 +77,90 @@ bool Engine::create_renderer()
     return true;
 }
 
+std::shared_ptr<Event> Engine::parse_mouse_event(const SDL_Event &sdl_event, const ScreenManager &screen_manager)
+{
+    Point pt;
+    std::shared_ptr<Event> event;
+    MouseClickEvent::State state = MouseClickEvent::State::PRESSED;
+    switch (sdl_event.type)
+    {
+        case SDL_MOUSEBUTTONDOWN:
+            pt = {sdl_event.button.x, sdl_event.button.y};
+            state = MouseClickEvent::State::PRESSED;
+            break;
+        case SDL_MOUSEBUTTONUP:
+            pt = {sdl_event.button.x, sdl_event.button.y};
+            state = MouseClickEvent::State::RELEASED;
+            break;
+        case SDL_MOUSEMOTION:
+            pt = {sdl_event.motion.x, sdl_event.motion.y};
+            break;
+        default:
+            break;
+    }
+
+    auto screen = screen_manager.find_screen(pt);
+    if (screen != nullptr && screen->accept_mouse_input())
+    {
+        pt -= screen->roi().top_left;
+        auto camera_pt = screen->to_camera_coords(pt);
+        auto context_id = static_cast<const Context*>(screen->camera()->current_context())->unique_id();
+        auto camera_id = screen->camera()->unique_id();
+        switch (sdl_event.type)
+        {
+            case SDL_MOUSEMOTION:
+                event.reset(new MouseMoveEvent(camera_pt, context_id, camera_id));
+                break;
+            default:
+            {
+                bool status = true;
+                MouseClickEvent::Button button = MouseClickEvent::Button::LEFT;
+                switch (sdl_event.button.button)
+                {
+                    case SDL_BUTTON_LEFT:
+                        button = MouseClickEvent::Button::LEFT;
+                        break;
+                    case SDL_BUTTON_RIGHT:
+                        button = MouseClickEvent::Button::RIGHT;
+                        break;
+                    default:
+                        status = false;
+                        break;
+                }
+                if (status)
+                {
+                    event.reset(new MouseClickEvent(camera_pt, button, state, context_id, camera_id));
+                }
+            }
+            break;
+        }
+    }
+    return event;
+}
+
+std::shared_ptr<Event> Engine::parse_event(const SDL_Event &sdl_event, const ScreenManager &screen_manager)
+{
+    std::shared_ptr<Event> event;
+    switch (sdl_event.type)
+    {
+        case SDL_KEYDOWN:
+            event.reset(new KeyPressEvent(KeyPressEvent::State::PRESSED, sdl_event.key.keysym.sym,
+                                          sdl_event.key.keysym.scancode));
+            break;
+        case SDL_KEYUP:
+            event.reset(new KeyPressEvent(KeyPressEvent::State::RELEASED, sdl_event.key.keysym.sym,
+                                          sdl_event.key.keysym.scancode));
+            break;
+        case SDL_MOUSEMOTION:
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            event = std::move(parse_mouse_event(sdl_event, screen_manager));
+            break;
+        default:
+            break;
+    }
+    return event;
+}
 void Engine::main_loop()
 {
     _running = true;
@@ -99,7 +183,7 @@ void Engine::main_loop()
 
     int window_w, window_h;
     SDL_GetWindowSize(_window, &window_w, &window_h);
-    screen_manager.set_screen_size(Size {window_w, window_h});
+    screen_manager.set_screen_size(Size{window_w, window_h});
 
     Context *context = context_manager.load_context(_config.application.entry_point.c_str(),
                                                     event_manager,
@@ -115,66 +199,43 @@ void Engine::main_loop()
     LOG_S("Done.")
 
     using namespace std::chrono;
-    auto desired_frame_duration = milliseconds(1000/_config.application.fps);
+    auto desired_frame_duration = milliseconds(1000 / _config.application.fps);
     SDL_Event sdl_event;
     while (_running && !context->finished())
     {
         auto frame_start_time = steady_clock::now();
         while (SDL_PollEvent(&sdl_event) != 0)
         {
-            std::shared_ptr<Event> event;
-            switch (sdl_event.type)
+            if (sdl_event.type == SDL_QUIT)
             {
-                case SDL_QUIT:
-                    _running = false;
-                    LOG_S("Quit sdl_event.")
-                case SDL_KEYDOWN:
-                    event.reset(new KeyboardEvent(KeyboardEvent::State::PRESSED, sdl_event.key.keysym.sym,
-                                                  sdl_event.key.keysym.scancode));
-                    break;
-                case SDL_KEYUP:
-                    event.reset(new KeyboardEvent(KeyboardEvent::State::RELEASED, sdl_event.key.keysym.sym,
-                                                  sdl_event.key.keysym.scancode));
-                    break;
-                case SDL_MOUSEBUTTONDOWN:
-                {
-                    Point pt{sdl_event.button.x, sdl_event.button.y};
-                    LOG_D("%d %d", sdl_event.button.x, sdl_event.button.y)
-                    auto _screen = screen_manager.find_screen(pt);
-                    if (_screen->accept_mouse_input())
-                    {
-                        auto _context = static_cast<const Context *>(_screen->camera()->current_context());
-                        LOG_D("%d %d", _screen->unique_id(), _context->unique_id())
-                    }
-                }
-                    break;
-                default:
-                    break;
+                _running = false;
+                LOG_S("Quit event")
             }
+            std::shared_ptr<Event> event = std::move(parse_event(sdl_event, screen_manager));
             if (!_running)
             {
                 break;
             }
             if (event)
             {
-                event_manager.push(event);
+                event_manager.dispatch(event);
             }
         }
-        context->evaluate((uint32_t)(desired_frame_duration.count()));
-        std::multimap<uint32_t, Screen*> screens;
-        for (auto& item: screen_manager)
+        context->evaluate((uint32_t) (desired_frame_duration.count()));
+        std::multimap<uint32_t, Screen *> screens;
+        for (auto &item: screen_manager)
         {
-            Screen* screen = item.second.get();
+            Screen *screen = item.second.get();
             screens.emplace(screen->z_order(), screen);
         }
         SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
         SDL_RenderClear(_renderer);
-        for (auto& item: screens)
+        for (auto &item: screens)
         {
-            Screen* screen = item.second;
-            SDL_Rect from = {0, 0, (int32_t)screen->roi().width(), (int32_t)screen->roi().height()};
-            SDL_Rect to = {(int32_t)screen->roi().top_left.x, (int32_t)screen->roi().top_left.y,
-                           (int32_t)screen->roi().width(), (int32_t)screen->roi().height()};
+            Screen *screen = item.second;
+            SDL_Rect from = {0, 0, (int32_t) screen->roi().width(), (int32_t) screen->roi().height()};
+            SDL_Rect to = {(int32_t) screen->roi().top_left.x, (int32_t) screen->roi().top_left.y,
+                           (int32_t) screen->roi().width(), (int32_t) screen->roi().height()};
             SDL_RenderCopy(_renderer, screen->render(), &from, &to);
         }
         SDL_RenderPresent(_renderer);
@@ -183,7 +244,7 @@ void Engine::main_loop()
         auto delta = duration_cast<milliseconds>(desired_frame_duration - frame_duration);
         if (delta.count() > 0)
         {
-            SDL_Delay((uint32_t)(delta.count()));
+            SDL_Delay((uint32_t) (delta.count()));
         }
     }
     context_manager.unload_context(context->unique_id());
