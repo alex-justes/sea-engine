@@ -62,6 +62,8 @@ target_sources(engine PRIVATE
         include/helpers/BasicContext.hpp
         src/BasicContext.cpp
         include/core/Types.h
+        include/core/AffineTransformation.h
+        src/AffineTransofrmation.cpp
         )
 
 

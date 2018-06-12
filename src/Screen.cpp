@@ -4,7 +4,7 @@
 
 using namespace core;
 
-Screen::Screen(const Roi &roi, int32_t z_order, SDL_Renderer *renderer, const RGBA& base_color)
+Screen::Screen(const Roi &roi, int32_t z_order, SDL_Renderer *renderer, const RGBA &base_color)
         :
         _roi(roi),
         _renderer(renderer),
@@ -33,6 +33,23 @@ void Screen::attach_camera(Camera *camera)
 {
     LOG_D("Camera %d attached to Screen %d", camera->unique_id(), unique_id())
     _camera = camera;
+    float scale_x = (float) _roi.width() / camera->size().x;
+    float scale_y = (float) _roi.height() / camera->size().y;
+    float scale = 1.f;
+    PointI32 offset{0, 0};
+    if (scale_x < scale_y)
+    {
+        scale = scale_x;
+        offset.y = (int32_t) (_roi.height() / scale - camera->size().y) / 2;
+    }
+    else
+    {
+        scale = scale_y;
+        offset.x = (int32_t) (_roi.width() / scale - camera->size().x) / 2;
+    }
+    _camera_to_screen.scale({scale, scale});
+    _camera_to_screen.shift(offset);
+    _screen_to_camera = _camera_to_screen.inverse();
 }
 
 void Screen::detach_camera()
@@ -46,12 +63,12 @@ const Camera *Screen::camera() const
     return _camera;
 }
 
-const Roi& Screen::roi() const
+const Roi &Screen::roi() const
 {
     return _roi;
 }
 
-SDL_Texture* Screen::render()
+SDL_Texture *Screen::render()
 {
     if (_camera != nullptr && _texture != nullptr)
     {
@@ -65,23 +82,12 @@ SDL_Texture* Screen::render()
             map.emplace(object->z_order(), object);
         }
 
-        float scale_x = (float)_roi.width() / camera->size().x;
-        float scale_y = (float)_roi.height() / camera->size().y;
-        float scale = 1.f;
-        PointI32 offset {0,0};
-        if (scale_x < scale_y)
-        {
-            scale = scale_x;
-            offset.y = (int32_t)(_roi.height() / scale - camera->size().y)/2;
-        }
-        else
-        {
-            scale = scale_y;
-            offset.x = (int32_t)(_roi.width() / scale - camera->size().x)/2;
-        }
+        auto scale = _camera_to_screen.scale();
+        auto offset = _camera_to_screen.offset();
+
         float old_scale_x(1.f), old_scale_y(1.f);
         SDL_RenderGetScale(_renderer, &old_scale_x, &old_scale_y);
-        SDL_RenderSetScale(_renderer, scale, scale);
+        SDL_RenderSetScale(_renderer, scale.x, scale.y);
         for (const auto &item: map)
         {
             const auto &object = item.second;
@@ -103,11 +109,11 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
         auto rect = dynamic_cast<const drawable::DrawableRect *>(single);
         if (rect != nullptr)
         {
-            SDL_Rect fill_rect = {position.x, position.y, (int32_t)rect->box_size().x, (int32_t)rect->box_size().y};
-            const auto& fill_color = rect->fill_color();
+            SDL_Rect fill_rect = {position.x, position.y, (int32_t) rect->box_size().x, (int32_t) rect->box_size().y};
+            const auto &fill_color = rect->fill_color();
             SDL_SetRenderDrawColor(_renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
             SDL_RenderFillRect(_renderer, &fill_rect);
-            const auto& border_color = rect->border_color();
+            const auto &border_color = rect->border_color();
             SDL_SetRenderDrawColor(_renderer, border_color.r, border_color.g, border_color.b, border_color.a);
             SDL_RenderDrawRect(_renderer, &fill_rect);
             return;
@@ -122,6 +128,11 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
             render(item, position);
         }
     }
+}
+
+Point Screen::to_camera_coords(const PointF &pt) const
+{
+    return _screen_to_camera*pt;
 }
 
 bool Screen::camera_attached()

@@ -5,6 +5,7 @@
 #include "core/BasicBehaviors.hpp"
 #include "core/Camera.h"
 #include "core/Types.h"
+#include "core/AffineTransformation.h"
 // TODO: strange behavior (simple #include "SDL.h" do not work)
 #include "SDL2/SDL.h"
 
@@ -25,6 +26,7 @@ namespace core
         const Roi& roi() const;
         virtual ~Screen();
         bool accept_mouse_input() const;
+        Point to_camera_coords(const PointF& pt) const;
     protected:
         void attach_camera(Camera* camera);
         void detach_camera();
@@ -40,6 +42,8 @@ namespace core
         uint32_t _z_order {0};
         RGBA _base_color{0,0,0,0};
         bool _accept_mouse_input{true};
+        transformation::AffineTransformation _screen_to_camera;
+        transformation::AffineTransformation _camera_to_screen;
     };
 }
 
