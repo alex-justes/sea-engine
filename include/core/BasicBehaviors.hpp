@@ -124,7 +124,7 @@ namespace core::basic::behavior
     public:
         const RGBA& fill_color() const;
         void set_fill_color(const RGBA& color);
-    private:
+    protected:
         RGBA _color;
     };
 
@@ -133,7 +133,7 @@ namespace core::basic::behavior
     public:
         const RGBA& border_color() const;
         void set_border_color(const RGBA& color);
-    private:
+    protected:
         RGBA _color;
     };
 

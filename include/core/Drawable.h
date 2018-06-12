@@ -5,6 +5,7 @@
 #include <list>
 #include "helpers/Containers.hpp"
 #include "core/BasicBehaviors.hpp"
+#include "core/BasicActors.h"
 #include "core/Types.h"
 
 namespace core::drawable
@@ -33,12 +34,14 @@ namespace core::drawable
             public SingleDrawable,
             public virtual core::basic::behavior::BoxSize,
             public virtual core::basic::behavior::FillColor,
-            public virtual core::basic::behavior::BorderColor
+            public virtual core::basic::behavior::BorderColor,
+            public virtual core::basic::actor::Fade
     {
     public:
         DrawableRect() = default;
         DrawableRect(const Size& box_size, const RGBA& fill_color, const RGBA& border_color);
         AABB bounding_box() const override;
+        void fade(float percent) override;
     };
 
 };

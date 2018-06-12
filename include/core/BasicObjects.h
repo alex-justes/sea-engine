@@ -27,14 +27,14 @@ namespace core::basic::object
 
     class InitializableObject :
             public virtual Object,
-            public basic::actor::Initialize
+            public virtual basic::actor::Initialize
     {
     };
 
     class UpdatableObject :
             public virtual Object,
             public virtual basic::behavior::Changed,
-            public basic::actor::Update
+            public virtual basic::actor::Update
     {
     };
 

@@ -1,4 +1,5 @@
 #include "core/Drawable.h"
+#include <algorithm>
 
 using namespace core::drawable;
 
@@ -16,4 +17,10 @@ std::list<const Drawable *> CompoundDrawable::get_drawables() const
 AABB DrawableRect::bounding_box() const
 {
     return AABB(Point(0,0), box_size());
+}
+void DrawableRect::fade(float percent)
+{
+    float p = std::clamp(percent, 0.f, 1.f);
+    FillColor::_color.a *= p;
+    BorderColor::_color.a *= p;
 }

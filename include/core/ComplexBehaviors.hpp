@@ -17,6 +17,7 @@ namespace core::complex::behavior
         using Drawable = core::drawable::Drawable;
         const Drawable *drawable() const;
         void set_drawable(std::unique_ptr<Drawable>&& drawable);
+        Drawable *get_drawable();
         template <class T, class ... Types>
         T* set_drawable(Types &&... args);
     private:
