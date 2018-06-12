@@ -9,6 +9,8 @@
 #include "core/Events.h"
 #include "core/BasicBehaviors.hpp"
 #include "core/Screen.h"
+#include "core/CollisionDetectors.hpp"
+#include "SDL2/SDL.h"
 
 namespace core
 {
@@ -23,16 +25,19 @@ namespace core
     public:
         ScreenManager(const ScreenManager &) = delete;
         ScreenManager &operator=(const ScreenManager &) = delete;
-        Id create_screen(const Roi& roi, int32_t z_order, const RGBA& base_color={0,0,0,0});
+        Id create_screen(const Roi& roi, int32_t z_order, bool accept_mouse_input=true, const RGBA& base_color={0,0,0,0});
         void remove_screen(Id id);
         bool attach_camera(Camera* camera, Id screen);
         bool detach_camera(Camera* camera, Id screen);
         bool detach_camera(Camera* camera);
         const Size& screen_size() const;
+        const Screen* find_screen(const Point& point);
     private:
         using Map = std::map<Id, std::unique_ptr<Screen>>;
         using const_iterator =  typename Map::const_iterator;
         using iterator = typename Map::iterator;
+
+        using Detector = collision_detector::HierarchicalSpatialGrid<Screen, basic::behavior::CollisionShape>;
 
         explicit ScreenManager(SDL_Renderer* renderer);
         void set_screen_size(const Size& size);
@@ -43,6 +48,7 @@ namespace core
         SDL_Renderer* _renderer;
         Map _screens;
         Size _screen_size;
+        Detector _detector;
     };
 
     class EventManager

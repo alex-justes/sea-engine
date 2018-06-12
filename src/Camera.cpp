@@ -39,6 +39,21 @@ void Camera::update_visible_objects(List &&list)
     _objects = std::move(list);
 }
 
+const void *Camera::current_context() const
+{
+    return _current_context;
+}
+
+void Camera::set_current_context(const void *context)
+{
+    _current_context = context;
+}
+
+void CameraManager::set_current_context(const void *context)
+{
+    _current_context = context;
+}
+
 CameraManager::const_iterator CameraManager::cbegin() const
 {
     return _cameras.cbegin();
@@ -63,6 +78,7 @@ Camera* CameraManager::create_camera(const Point& position, const Size& size)
 {
     Item camera {new Camera(position, size)};
     auto ptr = camera.get();
+    ptr->set_current_context(_current_context);
     _cameras[camera->unique_id()] = std::move(camera);
     return ptr;
 }

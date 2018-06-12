@@ -49,7 +49,7 @@ namespace helpers::context
         using RenderDetector = BroadCollisionDetector<basic::object::RenderableObject, basic::behavior::RenderShape>;
     public:
         using Collisions = CollisionDetector::PairCollisions;
-        explicit WorldManager(core::ScreenManager &screen_manager);
+        WorldManager(core::ScreenManager &screen_manager, const context::Context* current_context);
         virtual ~WorldManager();
         void set_world_size(const Size &size);
         const Size &world_size() const;
@@ -71,6 +71,7 @@ namespace helpers::context
         ObjectManager& object_manager();
         void set_time_elapsed(uint32_t time_elapsed);
     protected:
+        WorldManager() = default;
         void add_object(Object *object);
         void remove_object_impl(Id id);
     private:
@@ -92,6 +93,7 @@ namespace helpers::context
         ObjectManager _object_manager;
         Size _world_size{0, 0};
         uint32_t _time_elapsed;
+        const context::Context* _current_context;
     };
 
     class ContextManager

@@ -12,15 +12,18 @@ ScreenManager::ScreenManager(SDL_Renderer *renderer)
 
 }
 
-Id ScreenManager::create_screen(const Roi &roi, int32_t z_order, const RGBA& base_color)
+Id ScreenManager::create_screen(const Roi &roi, int32_t z_order, bool accept_mouse_input, const RGBA& base_color)
 {
     auto screen = new Screen(roi, z_order, _renderer, base_color);
+    screen->set_accept_mouse_input(accept_mouse_input);
     _screens.emplace(screen->unique_id(), screen);
+    _detector.add(*screen);
     return screen->unique_id();
 }
 
 void ScreenManager::remove_screen(Id id)
 {
+    _detector.remove(id);
     _screens.erase(id);
 }
 
@@ -76,9 +79,21 @@ const Size& ScreenManager::screen_size() const
     return _screen_size;
 }
 
+const Screen *ScreenManager::find_screen(const Point &point)
+{
+    auto screens = _detector.broad_check(point);
+    if (screens.empty())
+    {
+        return nullptr;
+    }
+    auto id = *(--screens.end());
+    return _screens[id].get();
+}
+
 void ScreenManager::set_screen_size(const Size &size)
 {
     _screen_size = size;
+    _detector.set_world_size(size);
 }
 
 ScreenManager::const_iterator ScreenManager::cbegin() const

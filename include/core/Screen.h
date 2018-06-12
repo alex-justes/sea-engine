@@ -14,20 +14,24 @@ namespace core
 
     class Screen:
             public virtual basic::behavior::UniqueId<Id>,
-            public virtual basic::behavior::Z_Order
+            public virtual basic::behavior::Z_Order,
+            public virtual basic::behavior::CollisionShape<AABB>
     {
         friend class ScreenManager;
     public:
         Screen() = delete;
+        const Camera* camera() const;
         SDL_Texture* render();
         const Roi& roi() const;
         virtual ~Screen();
+        bool accept_mouse_input() const;
     protected:
         void attach_camera(Camera* camera);
         void detach_camera();
         bool camera_attached();
         Screen(const Roi& roi, int32_t z_order, SDL_Renderer* renderer, const RGBA& base_color);
         void render(const drawable::Drawable* drawable, const PointI32& position);
+        void set_accept_mouse_input(bool flag);
     private:
         Roi _roi;
         SDL_Texture* _texture {nullptr};
@@ -35,6 +39,7 @@ namespace core
         Camera* _camera {nullptr};
         uint32_t _z_order {0};
         RGBA _base_color{0,0,0,0};
+        bool _accept_mouse_input{true};
     };
 }
 

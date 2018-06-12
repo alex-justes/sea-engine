@@ -10,6 +10,7 @@ Screen::Screen(const Roi &roi, int32_t z_order, SDL_Renderer *renderer, const RG
         _renderer(renderer),
         _base_color(base_color)
 {
+    set_collision_shape(roi);
     set_z_order(z_order);
     _texture = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, roi.width(),
                                  roi.height());
@@ -40,6 +41,11 @@ void Screen::detach_camera()
     _camera = nullptr;
 }
 
+const Camera *Screen::camera() const
+{
+    return _camera;
+}
+
 const Roi& Screen::roi() const
 {
     return _roi;
@@ -68,7 +74,7 @@ SDL_Texture* Screen::render()
             scale = scale_x;
             offset.y = (int32_t)(_roi.height() / scale - camera->size().y)/2;
         }
-        else if (scale_y < scale_x)
+        else
         {
             scale = scale_y;
             offset.x = (int32_t)(_roi.width() / scale - camera->size().x)/2;
@@ -121,4 +127,14 @@ void Screen::render(const drawable::Drawable *drawable, const PointI32 &position
 bool Screen::camera_attached()
 {
     return _camera != nullptr;
+}
+
+bool Screen::accept_mouse_input() const
+{
+    return _accept_mouse_input;
+}
+
+void Screen::set_accept_mouse_input(bool flag)
+{
+    _accept_mouse_input = flag;
 }

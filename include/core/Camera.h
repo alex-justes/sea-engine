@@ -24,22 +24,25 @@ namespace core
         const List& get_visible_objects() const;
         const Size& size() const;
         bool active();
+        const void* current_context() const;
         virtual ~Camera();
     protected:
         Camera() = delete;
         Camera(const Point& position, const Size& size);
         void set_size(const Size& size);
+        void set_current_context(const void* context);
     private:
         uint32_t _screens_attached {0};
         Size _size;
         List _objects;
+        const void* _current_context;
     };
 
 
     // TODO: friend world manager ?
     class CameraManager
     {
-        friend class WorldManager;
+        friend class helpers::context::WorldManager;
     private:
         using Item = std::unique_ptr<core::Camera>;
         using Cameras = std::map<Id, Item>;
@@ -53,13 +56,15 @@ namespace core
 
         const_iterator cbegin() const;
         const_iterator cend() const;
-        iterator begin();
-        iterator end();
 
         virtual ~CameraManager() = default;
     protected:
+        iterator begin();
+        iterator end();
+        void set_current_context(const void* context);
     private:
         Cameras _cameras;
+        const void* _current_context;
     };
 }
 

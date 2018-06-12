@@ -46,10 +46,12 @@ ObjectManager::iterator ObjectManager::end()
     return _objects.end();
 }
 
-WorldManager::WorldManager(core::ScreenManager &screen_manager)
+WorldManager::WorldManager(core::ScreenManager &screen_manager, const context::Context* current_context)
         :
-        _screen_manager(screen_manager)
+        _screen_manager(screen_manager),
+        _current_context(current_context)
 {
+    _camera_manager.set_current_context(_current_context);
 }
 
 WorldManager::~WorldManager()
@@ -303,7 +305,7 @@ void WorldManager::update_cameras()
 BasicContext::BasicContext(core::EventManager &event_manager, core::ScreenManager &screen_manager)
         :
         Context(event_manager, screen_manager),
-        _world_manager(screen_manager)
+        _world_manager(screen_manager, this)
 {
 }
 

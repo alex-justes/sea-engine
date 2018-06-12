@@ -136,6 +136,18 @@ void Engine::main_loop()
                     event.reset(new KeyboardEvent(KeyboardEvent::State::RELEASED, sdl_event.key.keysym.sym,
                                                   sdl_event.key.keysym.scancode));
                     break;
+                case SDL_MOUSEBUTTONDOWN:
+                {
+                    Point pt{sdl_event.button.x, sdl_event.button.y};
+                    LOG_D("%d %d", sdl_event.button.x, sdl_event.button.y)
+                    auto _screen = screen_manager.find_screen(pt);
+                    if (_screen->accept_mouse_input())
+                    {
+                        auto _context = static_cast<const Context *>(_screen->camera()->current_context());
+                        LOG_D("%d %d", _screen->unique_id(), _context->unique_id())
+                    }
+                }
+                    break;
                 default:
                     break;
             }
