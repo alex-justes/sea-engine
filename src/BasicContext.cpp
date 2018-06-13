@@ -336,6 +336,9 @@ void BasicContext::evaluate(uint32_t time_elapsed)
     {
         process_event(event.get());
     }
+
+    act();
+
     // TODO: check copy elision
     // Check collisions
     process_collisions(world_manager().check_collisions());
@@ -366,7 +369,10 @@ void BasicContext::evaluate(uint32_t time_elapsed)
         }
     }*/
 }
+void BasicContext::act()
+{
 
+}
 void BasicContext::process_collisions(BasicContext::Collisions pairs)
 {
     for (const auto&[id1, id2]: pairs)

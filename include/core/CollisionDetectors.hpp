@@ -141,8 +141,15 @@ namespace core::collision_detector
     Rect HierarchicalSpatialGrid<T, Behavior>::calc_roi(uint32_t level, const AABB &shape) const
     {
         auto cell_size = calc_cell_size(level);
-        Point left_top(shape.top_left.x / cell_size, shape.top_left.y / cell_size);
-        Point right_bottom(shape.bottom_right.x / cell_size, shape.bottom_right.y / cell_size);
+        AABB fixed_shape =
+                {
+                        std::clamp(shape.top_left.y, (uint32_t)0, _world_size.y),
+                        std::clamp(shape.top_left.x, (uint32_t)0, _world_size.x),
+                        std::clamp(shape.bottom_right.y, (uint32_t)0, _world_size.y),
+                        std::clamp(shape.bottom_right.x, (uint32_t)0, _world_size.x),
+                };
+        Point left_top(fixed_shape.top_left.x / cell_size, fixed_shape.top_left.y / cell_size);
+        Point right_bottom(fixed_shape.bottom_right.x / cell_size, fixed_shape.bottom_right.y / cell_size);
         return Rect(left_top, right_bottom);
     }
 
@@ -257,16 +264,19 @@ namespace core::collision_detector
         for (const auto &l: _grid_map)
         {
             const auto&[level, grid] = l;
-            auto cell = calc_cell(level, pt);
+            auto cell = calc_cell(level, fixed_pt);
             for (const auto &o: grid[cell.y][cell.x])
             {
                 auto object = _objects.find(o);
-                auto shape = this->get_shape(*(object->second.object));
-                if (pt.x < shape.bottom_right.x && pt.x > shape.top_left.x
-                    &&
-                    pt.y < shape.bottom_right.y && pt.y > shape.top_left.y)
+                if (object != _objects.end())
                 {
-                    collisions.insert(o);
+                    auto shape = this->get_shape(*(object->second.object));
+                    if (pt.x < shape.bottom_right.x && pt.x > shape.top_left.x
+                        &&
+                        pt.y < shape.bottom_right.y && pt.y > shape.top_left.y)
+                    {
+                        collisions.insert(o);
+                    }
                 }
             }
         }
@@ -295,9 +305,12 @@ namespace core::collision_detector
                     for (const auto &o: grid[y][x])
                     {
                         auto object = _objects.find(o);
-                        if (fixed_rc && this->get_shape(*(object->second.object)))
+                        if (object != _objects.end())
                         {
-                            collisions.insert(o);
+                            if (fixed_rc && this->get_shape(*(object->second.object)))
+                            {
+                                collisions.insert(o);
+                            }
                         }
                     }
                 }

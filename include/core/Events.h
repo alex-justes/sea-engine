@@ -23,9 +23,23 @@ namespace core
         const EventType _type;
     };
 
-    class MouseClickEvent :
+    class MouseEvent :
             public Event,
             public core::basic::behavior::Position
+    {
+    public:
+        Id context_id() const;
+        Id camera_id() const;
+    protected:
+        MouseEvent(EventType type, const Point &position, Id context, Id camera);
+        void set_position(const Point &position) override;
+    private:
+        const Id _context_id;
+        const Id _camera_id;
+    };
+
+    class MouseClickEvent :
+            public MouseEvent
     {
     public:
         enum class State
@@ -41,30 +55,16 @@ namespace core
         MouseClickEvent(const Point &position, Button button, State state, Id context, Id camera);
         Button button() const;
         State state() const;
-        Id context_id() const;
-        Id camera_id() const;
-    protected:
-        void set_position(const Point &position) override;
     private:
         const Button _button;
         const State _state;
-        const Id _context_id;
-        const Id _camera_id;
     };
 
     class MouseMoveEvent :
-            public Event,
-            public core::basic::behavior::Position
+            public MouseEvent
     {
     public:
         MouseMoveEvent(const Point &position, Id context, Id camera);
-        Id context_id() const;
-        Id camera_id() const;
-    protected:
-        void set_position(const Point &position) override;
-    private:
-        const Id _context_id;
-        const Id _camera_id;
     };
 
 

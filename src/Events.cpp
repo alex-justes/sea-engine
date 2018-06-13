@@ -13,7 +13,6 @@ EventType Event::type() const
     return _type;
 }
 
-
 KeyPressEvent::KeyPressEvent(State state, int sym, int code)
         :
         Event(EventType::KeyPress),
@@ -36,39 +35,40 @@ KeyPressEvent::State KeyPressEvent::state() const
     return _state;
 }
 
-MouseMoveEvent::MouseMoveEvent(const Point &position, Id context, Id camera)
-        :
-        Event(EventType::MouseMove),
-        _context_id(context),
-        _camera_id(camera)
-{
-    set_position(position);
-}
-
-void MouseMoveEvent::set_position(const Point &position)
-{
-    Position::set_position(position);
-}
-
-Id MouseMoveEvent::context_id() const
-{
-    return _context_id;
-}
-
-Id MouseMoveEvent::camera_id() const
-{
-    return _camera_id;
-}
-
-MouseClickEvent::MouseClickEvent(const Point &position, MouseClickEvent::Button button, MouseClickEvent::State state,
-                                 Id context, Id camera)
-: Event(EventType::MouseClick),
-  _button(button),
-  _state(state),
+MouseEvent::MouseEvent(EventType type, const Point &position, Id context, Id camera)
+: Event(type),
   _context_id(context),
   _camera_id(camera)
 {
     set_position(position);
+}
+
+Id MouseEvent::context_id() const
+{
+    return _context_id;
+}
+
+Id MouseEvent::camera_id() const
+{
+    return _camera_id;
+}
+
+void MouseEvent::set_position(const Point &position)
+{
+    Position::set_position(position);
+}
+
+MouseMoveEvent::MouseMoveEvent(const Point &position, Id context, Id camera)
+: MouseEvent(EventType::MouseMove, position, context, camera)
+{
+}
+
+MouseClickEvent::MouseClickEvent(const Point &position, MouseClickEvent::Button button, MouseClickEvent::State state,
+                                 Id context, Id camera)
+: MouseEvent(EventType::MouseClick, position, context, camera),
+  _button(button),
+  _state(state)
+{
 }
 
 MouseClickEvent::Button MouseClickEvent::button() const
@@ -81,17 +81,3 @@ MouseClickEvent::State MouseClickEvent::state() const
     return _state;
 }
 
-Id MouseClickEvent::context_id() const
-{
-    return _context_id;
-}
-
-Id MouseClickEvent::camera_id() const
-{
-    return _camera_id;
-}
-
-void MouseClickEvent::set_position(const Point &position)
-{
-    Position::set_position(position);
-}

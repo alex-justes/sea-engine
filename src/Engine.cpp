@@ -5,6 +5,8 @@
 #include "helpers/Configuration.h"
 #include "core/Engine.h"
 #include "core/Context.h"
+#include <thread>
+#include <mutex>
 
 namespace fs = std::filesystem;
 using namespace core;
@@ -161,6 +163,7 @@ std::shared_ptr<Event> Engine::parse_event(const SDL_Event &sdl_event, const Scr
     }
     return event;
 }
+
 void Engine::main_loop()
 {
     _running = true;
@@ -204,21 +207,24 @@ void Engine::main_loop()
     while (_running && !context->finished())
     {
         auto frame_start_time = steady_clock::now();
-        while (SDL_PollEvent(&sdl_event) != 0)
         {
-            if (sdl_event.type == SDL_QUIT)
+            SDL_Event event;
+            while (SDL_PollEvent(&event) != 0)
             {
-                _running = false;
-                LOG_S("Quit event")
-            }
-            std::shared_ptr<Event> event = std::move(parse_event(sdl_event, screen_manager));
-            if (!_running)
-            {
-                break;
-            }
-            if (event)
-            {
-                event_manager.dispatch(event);
+                if (event.type == SDL_QUIT)
+                {
+                    _running = false;
+                    LOG_S("Quit event")
+                }
+                if (!_running)
+                {
+                    break;
+                }
+                std::shared_ptr<Event> event_p = std::move(parse_event(event, screen_manager));
+                if (event_p)
+                {
+                    event_manager.dispatch(event_p);
+                }
             }
         }
         context->evaluate((uint32_t) (desired_frame_duration.count()));
